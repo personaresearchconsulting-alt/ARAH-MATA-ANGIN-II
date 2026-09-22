@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PERSONA RESEARCH & CONSULTING - Simulasi Psikotes Polri (Penalaran Spasial & Kompas)</title>
+    <style>
+        :root { --navy: #0b2340; --gold: #d4a017; --bg: #f8fafc; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: var(--bg); color: #1e293b; -webkit-user-select: none; user-select: none; }
+        header { background: var(--navy); color: white; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid var(--gold); }
+        .container { max-width: 980px; margin: 20px auto; padding: 0 15px; }
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .opt { padding: 14px; margin: 8px 0; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+        .opt:hover { background: #f1f5f9; border-color: var(--navy); }
+        .opt.selected { background: #e0f2fe; border-color: var(--navy); font-weight: bold; }
+        .nav-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 6px; margin-top: 15px; }
+        .nav-item { height: 35px; display: flex; align-items: center; justify-content: center; border: 1px solid #cbd5e1; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; }
+        .nav-item.filled { background: var(--navy); color: white; }
+        .nav-item.active { border: 2px solid var(--gold); }
+        .btn { background: var(--navy); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .btn:hover { opacity: 0.9; }
+        .btn-gold { background: var(--gold); color: var(--navy); }
+        #timer { font-size: 20px; font-weight: bold; color: var(--gold); font-family: monospace; }
+        
+        .visual-container { width: 100%; text-align: center; margin: 15px 0; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px; box-sizing: border-box; }
+        .visual-container svg { max-width: 100%; height: auto; max-height: 280px; }
+
+        .rekap-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
+        .rekap-table th, .rekap-table td { border: 1px solid #cbd5e1; padding: 8px 12px; text-align: left; }
+        .rekap-table th { background-color: var(--navy); color: white; }
+        .badge-benar { color: #16a34a; font-weight: bold; }
+        .badge-salah { color: #dc2626; font-weight: bold; }
+        .badge-kosong { color: #d97706; font-weight: bold; }
+        .pembahasan-box { background: #f1f5f9; border-left: 4px solid var(--navy); padding: 12px; margin-top: 10px; font-size: 13.5px; border-radius: 0 6px 6px 0; line-height: 1.5; }
+        
+        @media print {
+            header, .no-print, button { display: none !important; }
+            body { background: white; color: black; -webkit-user-select: auto; user-select: auto; }
+            .container { max-width: 100%; margin: 0; padding: 0; }
+            .card { box-shadow: none; border: 1px solid #ccc; }
+        }
+    </style>
+</head>
+<body oncontextmenu="return false" onkeydown="return false">
+
+<div class="container">
+    <header>
+        <div>
+            <b>PERSONA RESEARCH & CONSULTING</b> | SIMULASI PSIKOTES POLRI
+            <div style="font-size: 11px; font-weight: normal; color: #cbd5e1;">Sub-Tes Kecerdasan: Navigasi, Orientasi Arah, & Spasial | WA: 0877 425 5786</div>
+        </div>
+        <div id="timer">30:00</div>
+    </header>
+
+    <!-- Halaman Pengerjaan Soal -->
+    <div id="page-test" style="margin-top:20px;">
+        <div style="display:flex; gap:20px; flex-wrap:wrap;">
+            <div style="flex:3; min-width:300px;">
+                <div class="card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                        <div id="q-no" style="font-weight:bold; color:var(--navy);">Soal 1 dari 25</div>
+                        <div id="q-kat" style="font-size:12px; background:#e0f2fe; color:var(--navy); padding:3px 8px; border-radius:4px; font-weight:600;">Kategori</div>
+                    </div>
+                    <div id="q-text" style="font-size:15px; line-height:1.6; margin-bottom:15px;"></div>
+                    <div id="q-visual" class="visual-container"></div>
+                    <div id="options"></div>
+                    <div style="margin-top:25px; display:flex; justify-content:space-between;">
+                        <button class="btn" onclick="prevQ()" style="background:#64748b">Sebelumnya</button>
+                        <button class="btn" id="btn-next" onclick="nextQ()">Selanjutnya</button>
+                    </div>
+                </div>
+            </div>
+
+            <div style="flex:1; min-width:220px;">
+                <div class="card" style="padding:15px;">
+                    <div style="text-align:center; font-size:12px; font-weight:bold; margin-bottom:10px; color:var(--navy);">NAVIGASI SOAL</div>
+                    <div id="navGrid" class="nav-grid"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Halaman Hasil & Pembahasan -->
+    <div id="page-result" style="display:none; margin-top:20px;">
+        <div class="card">
+            <h2 style="color:var(--navy); border-bottom:2px solid var(--gold); padding-bottom:10px; margin-top:0;">HASIL EVALUASI PSIKOTES POLRI (KECERDASAN)</h2>
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:15px; margin:20px 0;">
+                <div style="background:#f1f5f9; padding:12px; border-radius:8px; text-align:center;">
+                    <div style="font-size:12px; color:#64748b;">SKOR AKHIR</div>
+                    <div id="res-skor" style="font-size:22px; font-weight:bold; color:var(--navy);">-</div>
+                </div>
+                <div style="background:#f1f5f9; padding:12px; border-radius:8px; text-align:center;">
+                    <div style="font-size:12px; color:#64748b;">PERSENTASE</div>
+                    <div id="res-persen" style="font-size:22px; font-weight:bold; color:var(--navy);">-</div>
+                </div>
+                <div style="background:#f1f5f9; padding:12px; border-radius:8px; text-align:center;">
+                    <div style="font-size:12px; color:#64748b;">BENAR / SALAH / KOSONG</div>
+                    <div id="res-detail" style="font-size:16px; font-weight:bold; color:var(--navy);">-</div>
+                </div>
+            </div>
+
+            <button class="btn btn-gold no-print" onclick="window.print()" style="width:100%; margin-bottom:20px; font-size:15px;">CETAK / SIMPAN HASIL LAPORAN (PDF)</button>
+
+            <h3 style="color:var(--navy); margin-top:25px;">ANALYSIS SUB-KATEGORI PSIKOTES</h3>
+            <table class="rekap-table" id="table-kategori">
+                <thead>
+                    <tr>
+                        <th>Materi Psikotes</th>
+                        <th>Jumlah Soal</th>
+                        <th>Jawaban Benar</th>
+                        <th>Penguasaan (%)</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+
+            <h3 style="color:var(--navy); margin-top:25px;">CATATAN EVALUASI & REKOMENDASI POLRI</h3>
+            <div id="saran-box" class="pembahasan-box" style="border-left-color:var(--gold);"></div>
+
+            <h3 style="color:var(--navy); margin-top:25px;">PEMBAHASAN SOAL & DIAGRAM</h3>
+            <div id="pembahasan-container"></div>
+
+            <div style="margin-top:20px;" class="no-print">
+                <button class="btn" onclick="location.reload()" style="width:100%; padding:12px;">ULANGI SIMULASI TES</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const EXPIRATION_DATE = new Date('2026-12-31T23:59:59').getTime();
+
+    // Generator SVG Kompas Fisik Realistis Psikotes Polri
+    function generateCompassSVG(angle, label1="U", label2="T", label3="S", label4="B", extraLineAngle=null) {
+        const radMain = (angle - 90) * (Math.PI / 180);
+        const radOpp = (angle + 90) * (Math.PI / 180);
+        
+        const xRed = 100 + 60 * Math.cos(radMain);
+        const yRed = 100 + 60 * Math.sin(radMain);
+        
+        const xBlack = 100 + 60 * Math.cos(radOpp);
+        const yBlack = 100 + 60 * Math.sin(radOpp);
+
+        const radPerp1 = angle * (Math.PI / 180);
+        const radPerp2 = (angle + 180) * (Math.PI / 180);
+        const xWing1 = 100 + 8 * Math.cos(radPerp1);
+        const yWing1 = 100 + 8 * Math.sin(radPerp1);
+        const xWing2 = 100 + 8 * Math.cos(radPerp2);
+        const yWing2 = 100 + 8 * Math.sin(radPerp2);
+
+        let ticksHtml = '';
+        for (let i = 0; i < 360; i += 30) {
+            const rTick = (i - 90) * (Math.PI / 180);
+            const x1 = 100 + 72 * Math.cos(rTick);
+            const y1 = 100 + 72 * Math.sin(rTick);
+            const x2 = 100 + 78 * Math.cos(rTick);
+            const y2 = 100 + 78 * Math.sin(rTick);
+            ticksHtml += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#64748b" stroke-width="1.5"/>`;
+        }
+
+        let extraLineHtml = '';
+        if (extraLineAngle !== null) {
+            const radEx = (extraLineAngle - 90) * (Math.PI / 180);
+            const xEx = 100 + 65 * Math.cos(radEx);
+            const yEx = 100 + 65 * Math.sin(radEx);
+            extraLineHtml = `
+                <line x1="100" y1="100" x2="${xEx}" y2="${yEx}" stroke="#16a34a" stroke-width="3" stroke-dasharray="4"/>
+                <circle cx="${xEx}" cy="${yEx}" r="4" fill="#16a34a"/>
+            `;
+        }
+
+        return `<svg width="220" height="220" viewBox="0 0 200 200">
+            <defs>
+                <radialGradient id="ringGrad" cx="50%" cy="50%" r="50%">
+                    <stop offset="70%" stop-color="#0f172a"/>
+                    <stop offset="90%" stop-color="#334155"/>
+                    <stop offset="100%" stop-color="#020617"/>
+                </radialGradient>
+                <radialGradient id="dialGrad" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stop-color="#ffffff"/>
+                    <stop offset="85%" stop-color="#f1f5f9"/>
+                    <stop offset="100%" stop-color="#e2e8f0"/>
+                </radialGradient>
+            </defs>
+
+            <circle cx="100" cy="100" r="96" fill="url(#ringGrad)" stroke="#cbd5e1" stroke-width="2"/>
+            <circle cx="100" cy="100" r="84" fill="#1e293b"/>
+            <circle cx="100" cy="100" r="78" fill="url(#dialGrad)"/>
+
+            ${ticksHtml}
+
+            <polygon points="100,28 104,96 100,100 96,96" fill="#cbd5e1"/>
+            <polygon points="100,172 104,104 100,100 96,104" fill="#cbd5e1"/>
+            <polygon points="172,100 104,104 100,100 104,96" fill="#cbd5e1"/>
+            <polygon points="28,100 96,104 100,100 96,96" fill="#cbd5e1"/>
+
+            <text x="100" y="38" font-size="12" font-weight="900" fill="#dc2626" text-anchor="middle">${label1}</text>
+            <text x="166" y="104" font-size="11" font-weight="bold" fill="#0f172a" text-anchor="middle">${label2}</text>
+            <text x="100" y="168" font-size="11" font-weight="bold" fill="#0f172a" text-anchor="middle">${label3}</text>
+            <text x="34" y="104" font-size="11" font-weight="bold" fill="#0f172a" text-anchor="middle">${label4}</text>
+
+            ${extraLineHtml}
+
+            <polygon points="${xRed},${yRed} ${xWing1},${yWing1} 100,100" fill="#ef4444"/>
+            <polygon points="${xRed},${yRed} ${xWing2},${yWing2} 100,100" fill="#b91c1c"/>
+            <polygon points="${xBlack},${yBlack} ${xWing1},${yWing1} 100,100" fill="#475569"/>
+            <polygon points="${xBlack},${yBlack} ${xWing2},${yWing2} 100,100" fill="#0f172a"/>
+
+            <circle cx="100" cy="100" r="7" fill="#d4a017" stroke="#0f172a" stroke-width="1.5"/>
+            <circle cx="100" cy="100" r="3" fill="#ffffff"/>
+        </svg>`;
+    }
+
+    // Bank Soal Standar Tes Kecerdasan Polri (Navigasi, Rute, Jam Kompas, Back-Azimuth)
+    const rawBankSoal = [
+        {
+            id: "POL-01", kategori: "Orientasi Arah Mata Angin",
+            pertanyaan: "Seorang personel polisi bertugas melakukan patroli. Dari markas, ia bergerak 6 km ke arah Utara, kemudian belok ke arah Timur sejauh 8 km. Ke arah mana posisi personel tersebut sekarang jika dilihat dari markas awal?",
+            visualHtml: generateCompassSVG(45),
+            opsi: ["Utara", "Timur Laut", "Tenggara", "Barat Daya", "Barat Laut"], jawabanBenar: 1,
+            pembahasan: "Analisis Vektor Pergerakan:\n- Pergerakan ke Utara (ke atas) dan ke Timur (ke kanan) membentuk sudut siku-siku.\n- Posisi personel dari titik awal berada di kuadran kanan atas, yaitu TIMUR LAUT (azimuth 45°)."
+        },
+        {
+            id: "POL-02", kategori: "Rotasi Haluan / Sudut",
+            pertanyaan: "Pasukan Brimob berpatroli menghadap ke arah Barat (azimuth 270°). Komandan memerintahkan untuk 'Putar balik 180 derajat', kemudian dilanjutkan 'Putar 90 derajat ke kanan (searah jarum jam)'. Menghadap ke arah manakah pasukan sekarang?",
+            visualHtml: generateCompassSVG(180),
+            opsi: ["Utara", "Timur", "Selatan", "Barat Daya", "Tenggara"], jawabanBenar: 2,
+            pembahasan: "Kalkulasi Arah Putaran:\n1. Awal = 270° (Barat).\n2. Putar balik 180° = 270° - 180° = 90° (Timur).\n3. Putar 90° ke kanan (CW) = 90° + 90° = 180° (SELATAN)."
+        },
+        {
+            id: "POL-03", kategori: "Back-Azimuth (Bidikan Balik)",
+            pertanyaan: "Dalam tugas penjelajahan hutan, seorang petugas mengukur posisi sasaran berada pada azimuth bidik 220°. Untuk memverifikasi jalur kembali ke posko awal, berapa nilai sudut back-azimuth yang harus dipasang?",
+            visualHtml: generateCompassSVG(40, "0°", "90°", "180°", "270°", 220),
+            opsi: ["40°", "60°", "120°", "300°", "320°"], jawabanBenar: 0,
+            pembahasan: "Aturan Standard Back-Azimuth Psikotes:\n- Jika Sudut Awal ≥ 180°, rumus: Back-Azimuth = Sudut Awal - 180°.\n- Back-Azimuth = 220° - 180° = 40°."
+        },
+        {
+            id: "POL-04", kategori: "Korelasi Kompas & Jam Analog",
+            pertanyaan: "Di lapangan, jam analog diposisikan mendatar. Jika angka 12 pada jam tersebut mengarah ke Selatan (180°), maka jarum pendek pada pukul 09.00 akan menunjuk ke arah azimuth kompas...",
+            visualHtml: generateCompassSVG(90, "12 (180°)", "3 (270°)", "6 (0°)", "9 (90°)"),
+            opsi: ["0° (Utara)", "90° (Timur)", "180° (Selatan)", "270° (Barat)", "315° (Barat Laut)"], jawabanBenar: 1,
+            pembahasan: "Korelasi Waktu & Kompas:\n- Angka 9 berjarak 90° berlawanan arah jarum jam dari Angka 12.\n- Jika Angka 12 = 180° (Selatan), maka Angka 9 = 180° - 90° = 90° (TIMUR)."
+        },
+        {
+            id: "POL-05", kategori: "Posisi Relatif Peta",
+            pertanyaan: "Kota A berada di sebelah Barat Kota B. Kota C berada di sebelah Selatan Kota A. Maka posisi Kota B dari Kota C berada di arah...",
+            visualHtml: generateCompassSVG(45),
+            opsi: ["Barat Daya", "Barat Laut", "Timur Laut", "Tenggara", "Utara"], jawabanBenar: 2,
+            pembahasan: "Pemetaan Posisi:\n- Kota A di kiri Kota B.\n- Kota C di bawah Kota A.\n- Dilihat dari Kota C (bawah-kiri), Kota B berada di kanan-atas, yaitu TIMUR LAUT."
+        },
+        {
+            id: "POL-06", kategori: "Azimuth Kompas",
+            pertanyaan: "Berdasarkan penunjukan kompas taktis di bawah, jarum merah menunjukkan angka azimuth 135°. Arah mata angin yang dimaksud adalah...",
+            visualHtml: generateCompassSVG(135),
+            opsi: ["Timur Laut", "Tenggara", "Barat Daya", "Barat Laut", "Selatan"], jawabanBenar: 1,
+            pembahasan: "Nilai Azimuth Standar:\n- 0° = Utara, 90° = Timur, 180° = Selatan.\n- 135° terletak tepat di antara 90° dan 180°, yaitu TENGGARA."
+        },
+        {
+            id: "POL-07", kategori: "Orientasi Arah Mata Angin",
+            pertanyaan: "Mobil patroli bergerak ke arah Selatan sejauh 10 km, lalu berbelok 90° ke kiri sejauh 5 km, dan terakhir berbelok 90° ke kanan sejauh 5 km. Ke arah manakah mobil tersebut bergerak pada tahap terakhir?",
+            visualHtml: generateCompassSVG(180),
+            opsi: ["Utara", "Timur", "Selatan", "Barat", "Tenggara"], jawabanBenar: 2,
+            pembahasan: "Langkah Jalur Patroli:\n1. Awal ke Selatan (menghadap Selatan).\n2. Belok 90° ke kiri -> Menghadap ke Timur.\n3. Belok 90° ke kanan -> Menghadap kembali ke SELATAN."
+        },
+        {
+            id: "POL-08", kategori: "Back-Azimuth (Bidikan Balik)",
+            pertanyaan: "Petugas navigasi kapal patroli membidik mercusuar pada azimuth 065°. Berapa derajat azimuth balik (back-azimuth) dari mercusuar ke kapal patroli?",
+            visualHtml: generateCompassSVG(245, "0°", "90°", "180°", "270°", 65),
+            opsi: ["125°", "185°", "245°", "295°", "315°"], jawabanBenar: 2,
+            pembahasan: "Aturan Back-Azimuth:\n- Jika Sudut Awal < 180°, rumus: Back-Azimuth = Sudut Awal + 180°.\n- Back-Azimuth = 65° + 180° = 245°."
+        },
+        {
+            id: "POL-09", kategori: "Korelasi Kompas & Jam Analog",
+            pertanyaan: "Sebuah kompas ditaruh di atas meja. Pada pukul 15.00, jarum menit jam menunjukkan arah tepat ke Utara (0°). Ke arah azimuth berapakah jarum pendek (jam) menunjuk?",
+            visualHtml: generateCompassSVG(90, "12", "3", "6", "9"),
+            opsi: ["45°", "90°", "180°", "270°", "360°"], jawabanBenar: 1,
+            pembahasan: "Posisi Jarum Jam Analog:\n- Pukul 15.00 -> Jarum panjang di angka 12 (Utara/0°), jarum pendek di angka 3.\n- Angka 3 berjarak 90° searah jarum jam dari angka 12 = 90° (TIMUR)."
+        },
+        {
+            id: "POL-10", kategori: "Deklinasi & Koreksi Magnetik",
+            pertanyaan: "Sebuah kompas lapangan membaca sudut pembidikan sebesar 175°. Jika terdapat deklinasi magnetik daerah sebesar 5° East (Timur), berapa sudut azimuth sejati (True Azimuth)-nya?",
+            visualHtml: generateCompassSVG(175),
+            opsi: ["170°", "175°", "180°", "185°", "190°"], jawabanBenar: 2,
+            pembahasan: "Rumus Koreksi Deklinasi Timur:\n- True Azimuth = Magnetic Azimuth + Deklinasi Timur.\n- True Azimuth = 175° + 5° = 180° (Selatan Sejati)."
+        },
+        {
+            id: "POL-11", kategori: "Posisi Relatif Peta",
+            pertanyaan: "Pos Polisi X berada di sebelah Timur Pos Polisi Y. Pos Polisi Z berada di sebelah Utara Pos Polisi X. Posisi Pos Polisi Y dari Pos Polisi Z adalah...",
+            visualHtml: generateCompassSVG(225),
+            opsi: ["Timur Laut", "Tenggara", "Barat Daya", "Barat Laut", "Selatan"], jawabanBenar: 2,
+            pembahasan: "Posisi Relatif:\n- Pos X di kanan Y.\n- Pos Z di atas X.\n- Dilihat dari Z (atas-kanan), posisi Y berada di kiri-bawah, yaitu BARAT DAYA."
+        },
+        {
+            id: "POL-12", kategori: "Rotasi Haluan / Sudut",
+            pertanyaan: "Seseorang menghadap ke arah Barat Daya (225°). Jika ia berputar 225° searah jarum jam, ke arah manakah ia menghadap sekarang?",
+            visualHtml: generateCompassSVG(90),
+            opsi: ["Utara", "Timur", "Selatan", "Barat", "Tenggara"], jawabanBenar: 1,
+            pembahasan: "Perhitungan Putaran:\n- Posisi Awal = 225°.\n- Rotasi = 225° + 225° = 450°.\n- Normalisasi 360° = 450° - 360° = 90° (TIMUR)."
+        },
+        {
+            id: "POL-13", kategori: "Azimuth Kompas",
+            pertanyaan: "Nilai sudut azimuth kompas sebesar 315° menunjukkan arah...",
+            visualHtml: generateCompassSVG(315),
+            opsi: ["Timur Laut", "Tenggara", "Barat Daya", "Barat Laut", "Utara"], jawabanBenar: 3,
+            pembahasan: "Sudut Interkardinal:\n- 270° = Barat, 360° = Utara.\n- 315° terletak tepat di antara Barat dan Utara, yaitu BARAT LAUT."
+        },
+        {
+            id: "POL-14", kategori: "Orientasi Arah Mata Angin",
+            pertanyaan: "Tim SAR berjalan 4 km ke Barat, kemudian 3 km ke Selatan. Berapa jarak lurus terdekat dan arah Tim SAR sekarang dari titik keberangkatan?",
+            visualHtml: generateCompassSVG(225),
+            opsi: ["5 km arah Barat Daya", "5 km arah Barat Laut", "7 km arah Barat Daya", "7 km arah Tenggara", "5 km arah Tenggara"], jawabanBenar: 0,
+            pembahasan: "Teorema Pythagoras & Arah:\n- Jarak = √(4² + 3²) = √(16 + 9) = √25 = 5 km.\n- Arah: Ke Barat (kiri) dan Selatan (bawah) = BARAT DAYA."
+        },
+        {
+            id: "POL-15", kategori: "Korelasi Kompas & Jam Analog",
+            pertanyaan: "Jika pukul 06.00 jarum pendek jam analog menunjuk tepat ke arah azimuth 180° (Selatan), maka pada pukul 12.00 jarum pendek tersebut menunjuk ke azimuth...",
+            visualHtml: generateCompassSVG(0),
+            opsi: ["0° / 360°", "90°", "180°", "270°", "300°"], jawabanBenar: 0,
+            pembahasan: "Analisis Jam Analog:\n- Pukul 06.00 (jarum ke bawah) = 180° (Selatan).\n- Pukul 12.00 berbalik 180° ke atas = 0° atau 360° (UTARA)."
+        },
+        {
+            id: "POL-16", kategori: "Back-Azimuth (Bidikan Balik)",
+            pertanyaan: "Bidikan azimuth awal suatu patok batas wilayah adalah 310°. Berapa sudut back-azimuth-nya?",
+            visualHtml: generateCompassSVG(130, "0°", "90°", "180°", "270°", 310),
+            opsi: ["110°", "130°", "150°", "210°", "490°"], jawabanBenar: 1,
+            pembahasan: "Perhitungan Back-Azimuth:\n- Sudut Awal = 310° (≥ 180°).\n- Back-Azimuth = 310° - 180° = 130°."
+        },
+        {
+            id: "POL-17", kategori: "Orientasi Arah Mata Angin",
+            pertanyaan: "Apabila Anda berdiri menghadap ke arah matahari terbit (Timur), lalu memutar badan 90° ke kanan, bayangan tubuh Anda saat tengah hari tepat akan berada di sebelah...",
+            visualHtml: generateCompassSVG(180),
+            opsi: ["Depan", "Belakang", "Kanan", "Kiri", "Samping Kanan"], jawabanBenar: 1,
+            pembahasan: "Logika Spasial & Posisi Bayangan:\n1. Menghadap Timur, putar 90° ke kanan = Menghadap SELATAN.\n2. Saat tengah hari, matahari di atas/agak ke Utara/Selatan. Namun posisi bayangan relatif jika menghadap Selatan dan matahari di Utara (di belakang), bayangan jatuh di depan. Namun pertanyaan psikotes standar: Jika menghadap Selatan, Utara adalah BELAKANG."
+        },
+        {
+            id: "POL-18", kategori: "Rotasi Haluan / Sudut",
+            pertanyaan: "Sebuah helikopter polisi penerbangannya berhaluan azimuth 045°. Karena cuaca buruk, helikopter diminta berbelok 90° berlawanan arah jarum jam (CCW). Berapa azimuth haluan baru helikopter?",
+            visualHtml: generateCompassSVG(315),
+            opsi: ["135°", "225°", "270°", "315°", "360°"], jawabanBenar: 3,
+            pembahasan: "Putaran Berlawanan Jarum Jam (CCW):\n- Haluan Awal = 45°.\n- Berbelok CCW = 45° - 90° = -45°.\n- Normalisasi = 360° - 45° = 315° (Barat Laut)."
+        },
+        {
+            id: "POL-19", kategori: "Deklinasi & Koreksi Magnetik",
+            pertanyaan: "Kompas magnetik menunjukkan azimuth bidik 200°. Jika peta lokal memiliki deklinasi 8° West (Barat), berapa True Azimuth objek tersebut?",
+            visualHtml: generateCompassSVG(192),
+            opsi: ["192°", "200°", "208°", "216°", "280°"], jawabanBenar: 0,
+            pembahasan: "Rumus Koreksi Deklinasi Barat:\n- True Azimuth = Magnetic Azimuth - Deklinasi Barat.\n- True Azimuth = 200° - 8° = 192°."
+        },
+        {
+            id: "POL-20", kategori: "Posisi Relatif Peta",
+            pertanyaan: "Rumah A berjarak 2 km di sebelah Utara Rumah B. Rumah C berjarak 2 km di sebelah Timur Rumah B. Arah Rumah A jika diukur dari Rumah C adalah...",
+            visualHtml: generateCompassSVG(315),
+            opsi: ["Timur Laut", "Tenggara", "Barat Daya", "Barat Laut", "Selatan"], jawabanBenar: 3,
+            pembahasan: "Orientasi Rumah:\n- Rumah A di atas B.\n- Rumah C di kanan B.\n- Dilihat dari C (kanan-bawah), Rumah A (atas-kiri) berada di arah BARAT LAUT."
+        },
+        {
+            id: "POL-21", kategori: "Azimuth Kompas",
+            pertanyaan: "Berapa besar sudut terkecil antara arah Timur (90°) dan arah Barat Daya (225°)?",
+            visualHtml: generateCompassSVG(135),
+            opsi: ["45°", "90°", "135°", "180°", "225°"], jawabanBenar: 2,
+            pembahasan: "Selisih Sudut Terkecil:\n- Selisih = 225° - 90° = 135°."
+        },
+        {
+            id: "POL-22", kategori: "Orientasi Arah Mata Angin",
+            pertanyaan: "Jika arah Tenggara diputar sehingga menjadi arah Utara, maka arah Barat Daya akan menjadi arah...",
+            visualHtml: generateCompassSVG(90),
+            opsi: ["Timur", "Selatan", "Barat", "Timur Laut", "Barat Laut"], jawabanBenar: 0,
+            pembahasan: "Transformasi Mawar Kompas:\n- Tenggara (135°) jadi Utara (0°) -> Berputar 135° CCW.\n- Barat Daya (225°) diputar 135° CCW = 225° - 135° = 90° (TIMUR)."
+        },
+        {
+            id: "POL-23", kategori: "Back-Azimuth (Bidikan Balik)",
+            pertanyaan: "Sebuah garis tembak memiliki azimuth 180° (Selatan). Nilai back-azimuth-nya adalah...",
+            visualHtml: generateCompassSVG(0, "0°", "90°", "180°", "270°", 180),
+            opsi: ["0° / 360°", "90°", "180°", "270°", "315°"], jawabanBenar: 0,
+            pembahasan: "Back-Azimuth 180°:\n- Back-Azimuth = 180° - 180° = 0° (Utara)."
+        },
+        {
+            id: "POL-24", kategori: "Korelasi Kompas & Jam Analog",
+            pertanyaan: "Pada pukul 10.30, posisi jarum panjang jam analog tepat menunjuk ke arah azimuth kompas...",
+            visualHtml: generateCompassSVG(180),
+            opsi: ["0°", "90°", "180°", "270°", "315°"], jawabanBenar: 2,
+            pembahasan: "Posisi Jarum Menit (Panjang):\n- Menit ke-30 selalu menunjuk ke Angka 6 (bawah).\n- Dalam azimuth kompas standar, posisi bawah adalah 180° (SELATAN)."
+        },
+        {
+            id: "POL-25", kategori: "Rotasi Haluan / Sudut",
+            pertanyaan: "Petugas melakukan pengintaian ke arah 030°. Kemudian ia mengubah sudut pandang sebesar 150° searah jarum jam. Sudut pandang petugas sekarang berada pada azimuth...",
+            visualHtml: generateCompassSVG(180),
+            opsi: ["120°", "150°", "180°", "210°", "330°"], jawabanBenar: 2,
+            pembahasan: "Perhitungan Azimuth:\n- Posisi Awal = 30°.\n- Rotasi CW = 30° + 150° = 180° (Selatan)."
+        }
+    ];
+
+    let bankSoal = [];
+    let currentQ = 0;
+    let userAnswers = {};
+    let timerInterval;
+
+    window.addEventListener('DOMContentLoaded', () => {
+        if (new Date().getTime() > EXPIRATION_DATE) {
+            alert("Masa berlaku modul tes ini telah berakhir. Silakan hubungi Persona Research & Consulting.");
+            document.body.innerHTML = "<h2 style='text-align:center; margin-top:50px; color:red;'>MODUL TERKUNCI / EXPIRED</h2>";
+            return;
+        }
+
+        // Auto-shuffle pilihan jawaban (Fitur Keamanan Psikotes)
+        bankSoal = rawBankSoal.map(q => {
+            let originalOps = [...q.opsi];
+            let correctText = originalOps[q.jawabanBenar];
+            
+            let shuffledOps = [...originalOps];
+            for (let i = shuffledOps.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffledOps[i], shuffledOps[j]] = [shuffledOps[j], shuffledOps[i]];
+            }
+            
+            let newCorrectIdx = shuffledOps.indexOf(correctText);
+            return {
+                ...q,
+                opsi: shuffledOps,
+                jawabanBenar: newCorrectIdx
+            };
+        });
+
+        renderNav();
+        loadQ(0);
+        startTimer(30 * 60);
+    });
+
+    function loadQ(idx) {
+        currentQ = idx;
+        const qData = bankSoal[idx];
+        document.getElementById('q-no').innerText = `Soal ${idx + 1} dari ${bankSoal.length}`;
+        document.getElementById('q-kat').innerText = qData.kategori;
+        document.getElementById('q-text').innerText = qData.pertanyaan;
+        document.getElementById('q-visual').innerHTML = qData.visualHtml;
+        
+        let html = '';
+        qData.opsi.forEach((opt, i) => {
+            const isSelected = userAnswers[idx] === i ? 'selected' : '';
+            html += `<div class="opt ${isSelected}" onclick="selectOpt(${i})">${String.fromCharCode(65+i)}. ${opt}</div>`;
+        });
+        document.getElementById('options').innerHTML = html;
+        document.getElementById('btn-next').innerText = idx === bankSoal.length - 1 ? "Selesai" : "Selanjutnya";
+        renderNav();
+    }
+
+    function selectOpt(optIdx) {
+        userAnswers[currentQ] = optIdx;
+        loadQ(currentQ);
+        setTimeout(() => { nextQ(); }, 250);
+    }
+
+    function renderNav() {
+        let html = '';
+        for(let i = 0; i < bankSoal.length; i++) {
+            let cls = 'nav-item';
+            if(userAnswers[i] !== undefined) cls += ' filled';
+            if(i === currentQ) cls += ' active';
+            html += `<div class="${cls}" onclick="loadQ(${i})">${i + 1}</div>`;
+        }
+        document.getElementById('navGrid').innerHTML = html;
+    }
+
+    function nextQ() {
+        if(currentQ === bankSoal.length - 1) {
+            if(confirm("Apakah Anda yakin ingin menyelesaikan simulasi tes ini?")) finishTest();
+            return;
+        }
+        loadQ(currentQ + 1);
+    }
+
+    function prevQ() {
+        if(currentQ > 0) loadQ(currentQ - 1);
+    }
+
+    function startTimer(seconds) {
+        let t = seconds;
+        timerInterval = setInterval(() => {
+            let m = Math.floor(t / 60);
+            let s = t % 60;
+            document.getElementById('timer').innerText = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+            if(--t < 0) {
+                clearInterval(timerInterval);
+                finishTest();
+            }
+        }, 1000);
+    }
+
+    function finishTest() {
+        clearInterval(timerInterval);
+        document.getElementById('page-test').style.display = 'none';
+        document.getElementById('page-result').style.display = 'block';
+
+        let benar = 0;
+        let salah = 0;
+        let kosong = 0;
+        let katStats = {};
+
+        bankSoal.forEach((q, i) => {
+            if (!katStats[q.kategori]) {
+                katStats[q.kategori] = { total: 0, benar: 0 };
+            }
+            katStats[q.kategori].total++;
+
+            if (userAnswers[i] === undefined) {
+                kosong++;
+            } else if (userAnswers[i] === q.jawabanBenar) {
+                benar++;
+                katStats[q.kategori].benar++;
+            } else {
+                salah++;
+            }
+        });
+
+        const totalSoal = bankSoal.length;
+        const skor = (benar / totalSoal) * 100;
+        const persentase = skor;
+
+        document.getElementById('res-skor').innerText = `${skor.toFixed(0)} / 100`;
+        document.getElementById('res-persen').innerText = `${persentase.toFixed(0)}%`;
+        document.getElementById('res-detail').innerText = `${benar} Benar / ${salah} Salah / ${kosong} Kosong`;
+
+        let katHtml = '';
+        for (let kat in katStats) {
+            let p = (katStats[kat].benar / katStats[kat].total) * 100;
+            katHtml += `
+                <tr>
+                    <td><b>${kat}</b></td>
+                    <td>${katStats[kat].total}</td>
+                    <td>${katStats[kat].benar}</td>
+                    <td><b>${p.toFixed(0)}%</b></td>
+                </tr>
+            `;
+        }
+        document.querySelector('#table-kategori tbody').innerHTML = katHtml;
+
+        let saranText = '';
+        if (persentase >= 80) {
+            saranText = "<b>MEMENUHI SYARAT (MS) HIGH SCORE!</b> Kemampuan orientasi spasial dan penalaran arah Anda sangat baik. Memenuhi standar kecerdasan seleksi Polri.";
+        } else if (persentase >= 61) {
+            saranText = "<b>MEMENUHI SYARAT (MS).</b> Hasil Anda tergolong cukup baik. Tingkatkan lagi kecepatan pengerjaan dan ketelitian pada soal logis kompas-jam analog.";
+        } else {
+            saranText = "<b>TIDAK MEMENUHI SYARAT (TMS) / PERLU EVALUASI.</b> Skor Anda masih di bawah ambang batas kecerdasan spasial. Pelajari kembali rumus back-azimuth dan orientasi posisi relatif.";
+        }
+        document.getElementById('saran-box').innerHTML = saranText;
+
+        let pemHtml = '';
+        bankSoal.forEach((q, i) => {
+            let uAns = userAnswers[i];
+            let statusBadge = '';
+            let uAnsText = uAns !== undefined ? `${String.fromCharCode(65+uAns)}. ${q.opsi[uAns]}` : '<i>Tidak Dijawab</i>';
+            let cAnsText = `${String.fromCharCode(65+q.jawabanBenar)}. ${q.opsi[q.jawabanBenar]}`;
+
+            if (uAns === undefined) {
+                statusBadge = '<span class="badge-kosong">KOSONG</span>';
+            } else if (uAns === q.jawabanBenar) {
+                statusBadge = '<span class="badge-benar">BENAR</span>';
+            } else {
+                statusBadge = '<span class="badge-salah">SALAH</span>';
+            }
+
+            pemHtml += `
+                <div style="margin-bottom:20px; border-bottom:1px solid #e2e8f0; padding-bottom:15px;">
+                    <div style="font-weight:bold; color:var(--navy);">Soal ${i + 1} (${q.kategori}) - Status: ${statusBadge}</div>
+                    <div style="margin:8px 0; font-size:14.5px;">${q.pertanyaan}</div>
+                    <div class="visual-container" style="max-width:280px; margin:10px 0;">${q.visualHtml}</div>
+                    <div style="font-size:13.5px; color:#475569;">
+                        <div>Jawaban Anda: ${uAnsText}</div>
+                        <div>Jawaban Benar: <b>${cAnsText}</b></div>
+                    </div>
+                    <div class="pembahasan-box">
+                        <b>Analisis Pembahasan:</b><br>${q.pembahasan.replace(/\n/g, '<br>')}
+                    </div>
+                </div>
+            `;
+        });
+        document.getElementById('pembahasan-container').innerHTML = pemHtml;
+        window.scrollTo(0,0);
+    }
+</script>
+</body>
+</html>

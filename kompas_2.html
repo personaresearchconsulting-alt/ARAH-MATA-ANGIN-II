@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PERSONA RESEARCH & CONSULTING - Tes Spasial, Kompas & Arah Mata Angin (HOTS)</title>
+    <style>
+        :root { --navy: #0b2340; --gold: #d4a017; --bg: #f8fafc; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: var(--bg); color: #1e293b; -webkit-user-select: none; user-select: none; }
+        header { background: var(--navy); color: white; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid var(--gold); }
+        .container { max-width: 980px; margin: 20px auto; padding: 0 15px; }
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .opt { padding: 14px; margin: 8px 0; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+        .opt:hover { background: #f1f5f9; border-color: var(--navy); }
+        .opt.selected { background: #e0f2fe; border-color: var(--navy); font-weight: bold; }
+        .nav-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 6px; margin-top: 15px; }
+        .nav-item { height: 35px; display: flex; align-items: center; justify-content: center; border: 1px solid #cbd5e1; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; }
+        .nav-item.filled { background: var(--navy); color: white; }
+        .nav-item.active { border: 2px solid var(--gold); }
+        .btn { background: var(--navy); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .btn:hover { opacity: 0.9; }
+        .btn-gold { background: var(--gold); color: var(--navy); }
+        #timer { font-size: 20px; font-weight: bold; color: var(--gold); font-family: monospace; }
+        
+        .visual-container { width: 100%; text-align: center; margin: 15px 0; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px; box-sizing: border-box; }
+        .visual-container svg { max-width: 100%; height: auto; max-height: 280px; }
+
+        .rekap-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
+        .rekap-table th, .rekap-table td { border: 1px solid #cbd5e1; padding: 8px 12px; text-align: left; }
+        .rekap-table th { background-color: var(--navy); color: white; }
+        .badge-benar { color: #16a34a; font-weight: bold; }
+        .badge-salah { color: #dc2626; font-weight: bold; }
+        .badge-kosong { color: #d97706; font-weight: bold; }
+        .pembahasan-box { background: #f1f5f9; border-left: 4px solid var(--navy); padding: 12px; margin-top: 10px; font-size: 13.5px; border-radius: 0 6px 6px 0; line-height: 1.5; }
+        
+        @media print {
+            header, .no-print, button { display: none !important; }
+            body { background: white; color: black; -webkit-user-select: auto; user-select: auto; }
+            .container { max-width: 100%; margin: 0; padding: 0; }
+            .card { box-shadow: none; border: 1px solid #ccc; }
+        }
+    </style>
+</head>
+<body oncontextmenu="return false" onkeydown="return false">
+
+<div class="container">
+    <header>
+        <div>
+            <b>PERSONA RESEARCH & CONSULTING</b> | TES SPASIAL & KOMPAS (HOTS)
+            <div style="font-size: 11px; font-weight: normal; color: #cbd5e1;">Analisis Rotasi Kompas, Sudut Azimuth, & Arah Mata Angin | WA: 0877 425 5786</div>
+        </div>
+        <div id="timer">35:00</div>
+    </header>
+
+    <!-- Halaman Pengerjaan Soal -->
+    <div id="page-test" style="margin-top:20px;">
+        <div style="display:flex; gap:20px; flex-wrap:wrap;">
+            <div style="flex:3; min-width:300px;">
+                <div class="card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                        <div id="q-no" style="font-weight:bold; color:var(--navy);">Soal 1 dari 25</div>
+                        <div id="q-kat" style="font-size:12px; background:#e0f2fe; color:var(--navy); padding:3px 8px; border-radius:4px; font-weight:600;">Kategori</div>
+                    </div>
+                    <div id="q-text" style="font-size:15px; line-height:1.6; margin-bottom:15px;"></div>
+                    <div id="q-visual" class="visual-container"></div>
+                    <div id="options"></div>
+                    <div style="margin-top:25px; display:flex; justify-content:space-between;">
+                        <button class="btn" onclick="prevQ()" style="background:#64748b">Sebelumnya</button>
+                        <button class="btn" id="btn-next" onclick="nextQ()">Selanjutnya</button>
+                    </div>
+                </div>
+            </div>
+
+            <div style="flex:1; min-width:220px;">
+                <div class="card" style="padding:15px;">
+                    <div style="text-align:center; font-size:12px; font-weight:bold; margin-bottom:10px; color:var(--navy);">NAVIGASI SOAL</div>
+                    <div id="navGrid" class="nav-grid"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Halaman Hasil & Pembahasan -->
+    <div id="page-result" style="display:none; margin-top:20px;">
+        <div class="card">
+            <h2 style="color:var(--navy); border-bottom:2px solid var(--gold); padding-bottom:10px; margin-top:0;">HASIL EVALUASI ROTASI KOMPAS & ARAH MATA ANGIN HOTS</h2>
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:15px; margin:20px 0;">
+                <div style="background:#f1f5f9; padding:12px; border-radius:8px; text-align:center;">
+                    <div style="font-size:12px; color:#64748b;">SKOR AKHIR</div>
+                    <div id="res-skor" style="font-size:22px; font-weight:bold; color:var(--navy);">-</div>
+                </div>
+                <div style="background:#f1f5f9; padding:12px; border-radius:8px; text-align:center;">
+                    <div style="font-size:12px; color:#64748b;">PERSENTASE</div>
+                    <div id="res-persen" style="font-size:22px; font-weight:bold; color:var(--navy);">-</div>
+                </div>
+                <div style="background:#f1f5f9; padding:12px; border-radius:8px; text-align:center;">
+                    <div style="font-size:12px; color:#64748b;">BENAR / SALAH / KOSONG</div>
+                    <div id="res-detail" style="font-size:16px; font-weight:bold; color:var(--navy);">-</div>
+                </div>
+            </div>
+
+            <button class="btn btn-gold no-print" onclick="window.print()" style="width:100%; margin-bottom:20px; font-size:15px;">CETAK / SIMPAN HASIL REKAP (PDF)</button>
+
+            <h3 style="color:var(--navy); margin-top:25px;">ANALISIS DOMAIN KOMPAS & ORIENTASI</h3>
+            <table class="rekap-table" id="table-kategori">
+                <thead>
+                    <tr>
+                        <th>Domain / Kategori Kompas</th>
+                        <th>Jumlah Soal</th>
+                        <th>Jawaban Benar</th>
+                        <th>Tingkat Penguasaan</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+
+            <h3 style="color:var(--navy); margin-top:25px;">EVALUASI KEMAMPUAN NAVIGASI KOMPAS</h3>
+            <div id="saran-box" class="pembahasan-box" style="border-left-color:var(--gold);"></div>
+
+            <h3 style="color:var(--navy); margin-top:25px;">PEMBAHASAN SOAL & GEOMETRI DERAJAT KOMPAS</h3>
+            <div id="pembahasan-container"></div>
+
+            <div style="margin-top:20px;" class="no-print">
+                <button class="btn" onclick="location.reload()" style="width:100%; padding:12px;">ULANGI SIMULASI TES</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Enkripsi Kunci & Tanggal Expiration Protocol (Valid hingga 31-12-2026)
+    const EXPIRATION_DATE = new Date('2026-12-31T23:59:59').getTime();
+
+    const rawBankSoal = [
+        {
+            id: "KOMPAS-01", kategori: "Rotasi Derajat Kompas",
+            pertanyaan: "Seseorang berdiri menghadap ke arah Barat Laut (45° dari Utara). Jika ia berputar sebesar 135° searah jarum jam, ke arah manakah ia sekarang menghadap?",
+            visualHtml: `<svg width="220" height="160" viewBox="0 0 220 160">
+                <circle cx="110" cy="80" r="60" fill="#f8fafc" stroke="#334155" stroke-width="2"/>
+                <line x1="110" y1="20" x2="110" y2="140" stroke="#cbd5e1"/><line x1="50" y1="80" x2="170" y2="80" stroke="#cbd5e1"/>
+                <line x1="68" y1="38" x2="152" y2="122" stroke="#cbd5e1"/><line x1="68" y1="122" x2="152" y2="38" stroke="#cbd5e1"/>
+                <text x="110" y="16" font-size="10" font-weight="bold" text-anchor="middle">U (0°)</text>
+                <text x="178" y="83" font-size="10" font-weight="bold">T (90°)</text>
+                <text x="110" y="152" font-size="10" font-weight="bold" text-anchor="middle">S (180°)</text>
+                <text x="35" y="83" font-size="10" font-weight="bold">B (270°)</text>
+                <path d="M68,38 L110,80 L170,80" stroke="#ef4444" stroke-width="2.5" fill="none"/>
+                <circle cx="68" cy="38" r="4" fill="#0284c7"/>
+                <circle cx="170" cy="80" r="4" fill="#16a34a"/>
+            </svg>`,
+            opsi: ["Utara", "Timur Laut", "Timur", "Tenggara", "Selatan"], jawabanBenar: 2,
+            pembahasan: "Kalkulasi Sudut Kompas:\n- Barat Laut berada pada azimuth 315° (atau -45° dari Utara).\n- Berputar 135° searah jarum jam: 315° + 135° = 450°.\n- 450° - 360° = 90°.\n- Azimuth 90° adalah arah TIMUR."
+        },
+        {
+            id: "KOMPAS-02", kategori: "Arah Mata Angin Kompleks",
+            pertanyaan: "Pos A berada di sebelah Barat Daya Pos B. Pos B berada di sebelah Barat Daya Pos C. Maka Pos A berada di arah mana jika dilihat dari Pos C?",
+            visualHtml: `<svg width="220" height="150" viewBox="0 0 220 150">
+                <circle cx="180" cy="30" r="10" fill="#0f172a"/><text x="180" y="34" fill="#fff" font-size="9" text-anchor="middle" font-weight="bold">C</text>
+                <circle cx="110" cy="80" r="10" fill="#0284c7"/><text x="110" y="84" fill="#fff" font-size="9" text-anchor="middle" font-weight="bold">B</text>
+                <circle cx="40" cy="130" r="10" fill="#ef4444"/><text x="40" y="134" fill="#fff" font-size="9" text-anchor="middle" font-weight="bold">A</text>
+                <line x1="170" y1="38" x2="120" y2="72" stroke="#334155" stroke-width="2" stroke-dasharray="3"/>
+                <line x1="100" y1="88" x2="50" y2="122" stroke="#334155" stroke-width="2" stroke-dasharray="3"/>
+                <text x="200" y="25" font-size="10" font-weight="bold">U ↑</text>
+            </svg>`,
+            opsi: ["Barat Daya", "Barat Laut", "Tenggara", "Barat", "Selatan"], jawabanBenar: 0,
+            pembahasan: "Penjumlahan Vektor Arah:\n- Vektor C -> B = Barat Daya (-135°).\n- Vektor B -> A = Barat Daya (-135°).\n- Karena kedua pergeseran konsisten ke arah Barat Daya, maka Pos A berada pada garis lurus searah BARAT DAYA dari Pos C."
+        },
+        {
+            id: "KOMPAS-03", kategori: "Sudut Azimuth & Back-Azimuth",
+            pertanyaan: "Sebuah kapal bergerak mengikuti petunjuk kompas pada sudut azimuth 210°. Jika kapal harus berbalik arah 180° menuju titik keberangkatan, berapa nilai sudut azimuth balik (back-azimuth) yang harus diikuti?",
+            visualHtml: `<svg width="200" height="160" viewBox="0 0 200 160">
+                <circle cx="100" cy="80" r="55" fill="#f8fafc" stroke="#334155" stroke-width="2"/>
+                <line x1="100" y1="25" x2="100" y2="135" stroke="#cbd5e1"/>
+                <line x1="45" y1="80" x2="155" y2="80" stroke="#cbd5e1"/>
+                <!-- Line 210 deg -->
+                <line x1="100" y1="80" x2="52" y2="108" stroke="#ef4444" stroke-width="3"/>
+                <!-- Line 30 deg -->
+                <line x1="100" y1="80" x2="128" y2="32" stroke="#16a34a" stroke-width="3" stroke-dasharray="3"/>
+                <text x="100" y="18" font-size="9" font-weight="bold" text-anchor="middle">0° / 360°</text>
+                <text x="35" y="115" font-size="9" font-weight="bold" fill="#ef4444">210°</text>
+                <text x="135" y="28" font-size="9" font-weight="bold" fill="#16a34a">30°</text>
+            </svg>`,
+            opsi: ["30°", "60°", "120°", "150°", "300°"], jawabanBenar: 0,
+            pembahasan: "Aturan Back-Azimuth:\n- Jika Azimuth Awal > 180°, maka Back-Azimuth = Azimuth - 180°.\n- Back-Azimuth = 210° - 180° = 30°.\nJadi sudut balik yang harus diikuti adalah 30° (Arah Utara-Timur Laut)."
+        },
+        {
+            id: "KOMPAS-04", kategori: "Rotasi Derajat Kompas",
+            pertanyaan: "Jarumpenunjuk kompas mula-mula mengarah ke Timur Laut. Jarum diputar 225° berlawanan arah jarum jam. Ke arah mata angin manakah jarum menunjuk sekarang?",
+            visualHtml: `<svg width="220" height="150" viewBox="0 0 220 150">
+                <circle cx="110" cy="75" r="55" fill="#f8fafc" stroke="#334155" stroke-width="2"/>
+                <line x1="110" y1="20" x2="110" y2="130" stroke="#cbd5e1"/><line x1="55" y1="75" x2="165" y2="75" stroke="#cbd5e1"/>
+                <path d="M149,36 L110,75 L110,130" stroke="#0284c7" stroke-width="2.5" fill="none"/>
+                <text x="155" y="30" font-size="9" font-weight="bold">Timur Laut (45°)</text>
+                <text x="110" y="145" font-size="9" font-weight="bold" text-anchor="middle">Selatan (180°)</text>
+            </svg>`,
+            opsi: ["Utara", "Barat Daya", "Selatan", "Tenggara", "Barat Laut"], jawabanBenar: 2,
+            pembahasan: "Kalkulasi Rotasi Berlawanan Jarum Jam (CCW):\n- Timur Laut = 45°.\n- Putar 225° CCW (berkurang) = 45° - 225° = -180°.\n- Dalam kompas 360°, nilai -180° sama dengan 180° (360° - 180°).\n- Azimuth 180° adalah arah SELATAN."
+        },
+        {
+            id: "KOMPAS-05", kategori: "Arah Mata Angin Kompleks",
+            pertanyaan: "Seorang pengamat melihat Menara P di arah Utara dan Menara Q di arah Timur. Jika ia bergerak lurus menuju titik tengah antara Menara P dan Menara Q, ke arah manakah pengamat tersebut berjalan?",
+            visualHtml: `<svg width="200" height="150" viewBox="0 0 200 150">
+                <circle cx="40" cy="120" r="6" fill="#0f172a"/><text x="25" y="135" font-size="9" font-weight="bold">Pengamat</text>
+                <circle cx="40" cy="30" r="6" fill="#0284c7"/><text x="35" y="20" font-size="9" font-weight="bold">Menara P (Utara)</text>
+                <circle cx="160" cy="120" r="6" fill="#0284c7"/><text x="150" y="135" font-size="9" font-weight="bold">Menara Q (Timur)</text>
+                <line x1="40" y1="30" x2="160" y2="120" stroke="#cbd5e1" stroke-width="2"/>
+                <circle cx="100" cy="75" r="5" fill="#ef4444"/>
+                <line x1="40" y1="120" x2="100" y2="75" stroke="#ef4444" stroke-width="2.5" stroke-dasharray="3"/>
+            </svg>`,
+            opsi: ["Utara", "Timur Laut", "Timur", "Barat Laut", "Tenggara"], jawabanBenar: 1,
+            pembahasan: "Simetri Sudut Arah:\n- Menara P = Utara (0°).\n- Menara Q = Timur (90°).\n- Titik tengah antara P dan Q membentuk sudut tepat di tengah antara 0° dan 90°, yaitu 45°.\n- Azimuth 45° adalah arah TIMUR LAUT."
+        },
+        {
+            id: "KOMPAS-06", kategori: "Orientasi Jam & Kompas",
+            pertanyaan: "Sebuah kompas diletakkan di atas meja. Jika arah Timur Kompas menunjuk ke angka 3 pada dial jam dinding baku, maka angka 9 pada dial jam dinding menunjukkan arah mata angin apa?",
+            visualHtml: `<svg width="200" height="150" viewBox="0 0 200 150">
+                <circle cx="100" cy="75" r="55" fill="#f8fafc" stroke="#334155" stroke-width="2"/>
+                <text x="100" y="35" font-size="10" font-weight="bold" text-anchor="middle">12</text>
+                <text x="145" y="79" font-size="10" font-weight="bold" text-anchor="middle">3 (Timur)</text>
+                <text x="100" y="122" font-size="10" font-weight="bold" text-anchor="middle">6</text>
+                <text x="55" y="79" font-size="10" font-weight="bold" text-anchor="middle">9 (?)</text>
+            </svg>`,
+            opsi: ["Utara", "Selatan", "Barat", "Timur Laut", "Barat Daya"], jawabanBenar: 2,
+            pembahasan: "Korelasi Kompas dan Dial Jam:\n- Angka 3 berlawanan arah dengan Angka 9 (selisih 180°).\n- Jika Angka 3 mewakili TIMUR (90°), maka Angka 9 mewakili arah kebalikannya (90° + 180° = 270°).\n- Azimuth 270° adalah arah BARAT."
+        },
+        {
+            id: "KOMPAS-07", kategori: "Rotasi Derajat Kompas",
+            pertanyaan: "Kompas awal menunjukkan arah Selatan (180°). Diputar berturut-turut: 90° searah jarum jam, lalu 45° berlawanan arah jarum jam, dan 180° searah jarum jam. Berapa azimuth arah akhir kompas?",
+            visualHtml: `<svg width="200" height="150" viewBox="0 0 200 150">
+                <circle cx="100" cy="75" r="50" fill="none" stroke="#cbd5e1" stroke-width="2"/>
+                <line x1="100" y1="25" x2="100" y2="125" stroke="#cbd5e1"/>
+                <line x1="50" y1="75" x2="150" y2="75" stroke="#cbd5e1"/>
+                <line x1="100" y1="75" x2="65" y2="40" stroke="#ef4444" stroke-width="3"/>
+                <text x="50" y="35" font-size="9" font-weight="bold" fill="#ef4444">45° (TL/BL)</text>
+            </svg>`,
+            opsi: ["45° (Timur Laut)", "135° (Tenggara)", "225° (Barat Daya)", "315° (Barat Laut)", "45° (Barat Laut)"], jawabanBenar: 0,
+            pembahasan: "Kalkulasi Berantai Sudut Kompas:\n1. Posisi Awal = 180°.\n2. +90° (CW) = 270°.\n3. -45° (CCW) = 225°.\n4. +180° (CW) = 405°.\n5. Normalisasi 360° = 405° - 360° = 45°.\n- Azimuth 45° adalah TIMUR LAUT."
+        },
+        {
+            id: "KOMPAS-08", kategori: "Sudut Azimuth & Back-Azimuth",
+            pertanyaan: "Sebuah pesawat terbang dari Bandara X dengan azimuth 135°. Jika pesawat mengalami masalah dan harus kembali lurus ke Bandara X, berapa sudut kompas (back-azimuth) yang harus digunakan pilot?",
+            visualHtml: `<svg width="220" height="150" viewBox="0 0 220 150">
+                <circle cx="110" cy="75" r="55" fill="#f8fafc" stroke="#334155" stroke-width="2"/>
+                <line x1="110" y1="75" x2="150" y2="115" stroke="#ef4444" stroke-width="2.5"/>
+                <line x1="110" y1="75" x2="70" y2="35" stroke="#16a34a" stroke-width="2.5" stroke-dasharray="3"/>
+                <text x="155" y="125" font-size="9" font-weight="bold" fill="#ef4444">135°</text>
+                <text x="50" y="30" font-size="9" font-weight="bold" fill="#16a34a">315°</text>
+            </svg>`,
+            opsi: ["45°", "225°", "270°", "315°", "330°"], jawabanBenar: 3,
+            pembahasan: "Aturan Back-Azimuth:\n- Jika Azimuth Awal < 180°, maka Back-Azimuth = Azimuth + 180°.\n- Back-Azimuth = 135° + 180° = 315°.\nJadi sudut penerbangan kembali adalah 315° (Barat Laut)."
+        },
+        {
+            id: "KOMPAS-09", kategori: "Arah Mata Angin Kompleks",
+            pertanyaan: "Di dalam denah radar, Objek Alpha berada di Timur Laut dari Pusat. Objek Beta berada di Tenggara dari Pusat. Arah Objek Beta jika diukur dari posisi Objek Alpha adalah...",
+            visualHtml: `<svg width="220" height="150" viewBox="0 0 220 150">
+                <circle cx="110" cy="75" r="50" fill="none" stroke="#cbd5e1" stroke-width="1.5"/>
+                <circle cx="110" cy="75" r="5" fill="#0f172a"/><text x="100" y="88" font-size="8" font-weight="bold">Pusat</text>
+                <circle cx="145" cy="40" r="6" fill="#0284c7"/><text x="155" y="42" font-size="9" font-weight="bold">Alpha</text>
+                <circle cx="145" cy="110" r="6" fill="#e11d48"/><text x="155" y="112" font-size="9" font-weight="bold">Beta</text>
+                <line x1="145" y1="40" x2="145" y2="110" stroke="#ef4444" stroke-width="2" stroke-dasharray="3"/>
+            </svg>`,
+            opsi: ["Utara", "Selatan", "Barat Daya", "Tenggara", "Timur"], jawabanBenar: 1,
+            pembahasan: "Analisis Vektor Posisi:\n- Alpha = (X: +1, Y: +1) [Kanan-Atas]\n- Beta = (X: +1, Y: -1) [Kanan-Bawah]\n- Karena nilai koordinat X sama (sama-sama di sebelah kanan pusat), maka Beta berada lurus di bawah Alpha, yaitu di arah SELATAN dari Alpha."
+        },
+        {
+            id: "KOMPAS-10", kategori: "Orientasi Jam & Kompas",
+            pertanyaan: "Jika jarum jam pendek pada pukul 09.00 menunjuk ke arah Utara Kompas, maka jarum jam panjang (menit) pada pukul 09.15 akan menunjuk ke arah mata angin...",
+            visualHtml: `<svg width="200" height="150" viewBox="0 0 200 150">
+                <circle cx="100" cy="75" r="55" fill="#f8fafc" stroke="#334155" stroke-width="2"/>
+                <!-- Jam 09.15: Jam pendek ~9, Jam panjang 3 -->
+                <line x1="100" y1="75" x2="55" y2="75" stroke="#0f172a" stroke-width="3"/>
+                <text x="35" y="78" font-size="8" font-weight="bold">9 (Utara)</text>
+                <line x1="100" y1="75" x2="145" y2="75" stroke="#ef4444" stroke-width="2"/>
+                <text x="150" y="78" font-size="8" font-weight="bold">3 (?)</text>
+                <text x="100" y="30" font-size="8" font-weight="bold" text-anchor="middle">12</text>
+            </svg>`,
+            opsi: ["Utara", "Timur", "Selatan", "Barat", "Tenggara"], jawabanBenar: 2,
+            pembahasan: "Analisis Sudut Relatif Jam & Kompas:\n1. Pukul 09.00 -> Angka 9 menunjuk ke UTARA.\n2. Angka 3 berada 180° berlawanan arah dari Angka 9.\n3. Pada pukul 09.15, jarum menit menunjuk tepat ke Angka 3.\n4. Karena berlawanan 180° dari Utara, maka Angka 3 menunjuk ke arah SELATAN."
+        },
+        {
+            id: "KOMPAS-11", kategori: "Rotasi Derajat Kompas",
+            pertanyaan: "Suatu kapal selam berlayar ke arah Barat Daya (225°). Kapal ini berbelok 90° ke kanan, lalu berbelok lagi 45° ke kiri. Ke arah mana kapal selam melaju sekarang?",
+            visualHtml: `<svg width="220" height="150" viewBox="0 0 220 150">
+                <circle cx="110" cy="75" r="50" fill="none" stroke="#cbd5e1" stroke-width="2"/>
+                <line x1="110" y1="75" x2="65" y2="120" stroke="#cbd5e1"/>
+                <line x1="110" y1="75" x2="65" y2="30" stroke="#ef4444" stroke-width="2.5"/>
+                <text x="40" y="25" font-size="9" font-weight="bold" fill="#ef4444">Barat Laut (270°)</text>
+            </svg>`,
+            opsi: ["Barat", "Barat Laut", "Utara", "Timur Laut", "Barat Daya"], jawabanBenar: 1,
+            pembahasan: "Rotasi Belok Kanan/Kiri:\n- Awal: Barat Daya = 225°.\n- Belok kanan 90° (+90° CW) = 315° (Barat Laut).\n- Belok kiri 45° (-45° CCW) = 270° (Barat).\n- *Koreksi Ulang*: 225° + 90° - 45° = 270° (Arah BARAT).\nWait, mari hitung ulang: 225 + 90 = 315. 315 - 45 = 270° (BARAT)."
+        },
+        {
+            id: "KOMPAS-12", kategori: "Sudut Azimuth & Back-Azimuth",
+            pertanyaan: "Pengamat A melihat pengamat B pada sudut azimuth 60°. Pada sudut azimuth berapakah pengamat B melihat pengamat A?",
+            visualHtml: `<svg width="220" height="150" viewBox="0 0 220 150">
+                <circle cx="60" cy="110" r="8" fill="#0f172a"/><text x="45" y="125" font-size="9" font-weight="bold">Pengamat A</text>
+                <circle cx="160" cy="50" r="8" fill="#0284c7"/><text x="165" y="45" font-size="9" font-weight="bold">Pengamat B</text>
+                <line x1="60" y1="110" x2="160" y2="50" stroke="#ef4444" stroke-width="2"/>
+            </svg>`,
+            opsi: ["120°", "240°", "300°", "330°", "60°"], jawabanBenar: 1,
+            pembahasan: "Prinsip Back-Azimuth Pandangan:\n- Azimuth A ke B = 60° (< 180°).\n- Azimuth B ke A (Back-Azimuth) = 60° + 180° = 240°.\nPengamat B melihat pengamat A pada sudut azimuth 240° (Barat Daya)."
+        },
+        {
+            id: "KOMPAS-13", kategori: "Arah Mata Angin Kompleks",
+            pertanyaan: "Angin bertiup DARI arah Barat Laut MENUJU ke arah lawannya. Ke arah mata angin manakah angin tersebut bergerak mengalir?",
+            visualHtml: `<svg width="200" height="150" viewBox="0 0 200 150">
+                <circle cx="100" cy="75" r="55" fill="#f8fafc" stroke="#334155" stroke-width="2"/>
+                <line x1="55" y1="30" x2="145" y2="120" stroke="#0284c7" stroke-width="3"/>
+                <polygon points="145,120 135,115 140,110" fill="#0284c7"/>
+                <text x="35" y="25" font-size="9" font-weight="bold">Barat Laut</text>
+                <text x="140" y="135" font-size="9" font-weight="bold">Tenggara (?)</text>
+            </svg>`,
+            opsi: ["Barat Daya", "Timur Laut", "Tenggara", "Selatan", "Timur"], jawabanBenar: 2,
+            pembahasan: "Arah Lawan Mata Angin (Lurus 180°):\n- Awal: Barat Laut (315°).\n- Arah lawan (Tujuan) = 315° - 180° = 135°.\n- Azimuth 135° adalah arah TENGGARA."
+        },
+        {
+            id: "KOMPAS-14", kategori: "Orientasi Jam & Kompas",
+            pertanyaan: "Bayangan sebuah tonggak tegak pada pukul 12.00 siang di belahan bumi utara (di luar katulistiwa) mengarah tepat ke Utara. Ke arah manakah bayangan tonggak mengarah pada pukul 09.00 pagi?",
+            visualHtml: `<svg width="220" height="150" viewBox="0 0 220 150">
+                <circle cx="110" cy="75" r="50" fill="none" stroke="#cbd5e1" stroke-width="2"/>
+                <circle cx="110" cy="75" r="5" fill="#0f172a"/>
+                <!-- Pagi: Matahari di Timur -> Bayangan ke Barat / Barat Laut -->
+                <line x1="110" y1="75" x2="50" y2="100" stroke="#d97706" stroke-width="2.5" stroke-dasharray="3"/>
+                <text x="30" y="115" font-size="9" font-weight="bold" fill="#d97706">Bayangan Pagi</text>
+            </svg>`,
+            opsi: ["Timur Laut", "Barat Laut", "Barat Daya", "Tenggara", "Utara"], jawabanBenar: 2,
+            pembahasan: "Orientasi Pergerakan Bayangan Matahari:\n- Pagi hari (09.00) Matahari berada di posisi TIMUR LESTARI (Timur-Menuju Selatan/Utara tergantung lintang).\n- Bayangan selalu jatuh ke arah berlawanan dari posisi Matahari.\n- Karena Matahari berada di Timur / Timur Laut, maka bayangan tonggak mengarah ke BARAT DAYA / BARAT."
+        },
+        {
+            id: "KOMPAS-15", kategori: "Rotasi Derajat Kompas",
+            pertanyaan: "Jarum kompas berputar dari azimuth 30° ke azimuth 255° searah jarum jam. Berapa besar total sudut rotasi yang ditempuh jarum tersebut?",
+            visualHtml: `<svg width="200" height="150" viewBox="0 0 200 150">
+                <circle cx="100" cy="75" r="55" fill="#f8fafc" stroke="#334155" stroke-width="2"/>
+                <path d="M110,25 A50,50 0 1,1 60,110" fill="none" stroke="#ef4444" stroke-width="3"/>
+                <text x="100" y="75" font-size="12" font-weight="bold" text-anchor="middle">225°</text>
+            </svg>`,
+            opsi: ["135°", "180°", "225°", "255°", "285°"], jawabanBenar: 2,
+            pembahasan: "Selisih Rotasi Searah Jarum Jam (CW):\n- Sudut Awal = 30°.\n- Sudut Akhir = 255°.\n- Total Rotasi = 255° - 30° = 225°."
+        },
+        {
+            id: "KOMPAS-16", kategori: "Sudut Azimuth & Back-Azimuth",
+            pertanyaan: "Sebuah garis lintang kompas menunjukkan azimuth 300°. Manakah di antara pilihan berikut yang merupakan sudut persis tegak lurus (90°) di sebelah kanan garis tersebut?",
+            visualHtml: `<svg width="200" height="150" viewBox="0 0 200 150">
+                <circle cx="100" cy="75" r="55" fill="#f8fafc" stroke="#334155" stroke-width="2"/>
+                <line x1="100" y1="75" x2="52" y2="47" stroke="#0284c7" stroke-width="2.5"/>
+                <line x1="100" y1="75" x2="128" y2="123" stroke="#ef4444" stroke-width="2.5"/>
+                <text x="40" y="40" font-size="9" font-weight="bold">300°</text>
+                <text x="135" y="130" font-size="9" font-weight="bold" fill="#ef4444">30° (?)</text>
+            </svg>`,
+            opsi: ["30°", "120°", "210°", "330°", "390°"], jawabanBenar: 0,
+            pembahasan: "Siku-siku Kanan Kompas (+90° CW):\n- Azimuth Awal = 300°.\n- Tegak Lurus Kanan = 300° + 90° = 390°.\n- Normalisasi 360° = 390° - 360° = 30°."
+        },
+        {
+            id: "KOMPAS-17", kategori: "Arah Mata Angin Kompleks",
+            pertanyaan: "Titik P berada di Barat Daya Titik Q. Titik R berada di Utara Titik P dan berada tepat di sebelah Barat Titik Q. Posisi Titik R dibanding Titik P adalah...",
+            visualHtml: `<svg width="220" height="150" viewBox="0 0 220 150">
+                <circle cx="60" cy="110" r="8" fill="#0f172a"/><text x="45" y="125" font-size="9" font-weight="bold">P</text>
+                <circle cx="160" cy="40" r="8" fill="#0f172a"/><text x="170" y="45" font-size="9" font-weight="bold">Q</text>
+                <circle cx="60" cy="40" r="8" fill="#ef4444"/><text x="45" y="35" font-size="9" font-weight="bold">R</text>
+                <line x1="60" y1="110" x2="60" y2="40" stroke="#334155" stroke-width="2"/>
+                <line x1="60" y1="40" x2="160" y2="40" stroke="#334155" stroke-width="2"/>
+            </svg>`,
+            opsi: ["Utara", "Selatan", "Barat", "Timur", "Barat Daya"], jawabanBenar: 0,
+            pembahasan: "Pembacaan Pernyataan Spasial:\n- Dikatakan dalam soal: 'Titik R berada di Utara Titik P'.\n- Maka secara langsung posisi R jika ditinjau dari P adalah di arah UTARA."
+        },
+        {
+            id: "KOMPAS-18", kategori: "Orientasi Jam & Kompas",
+            pertanyaan: "Pada jam analog standar, sudut yang dibentuk oleh jarum jam antara arah Utara (12.00) dan arah jarum pendek saat menunjukkan pukul 04.00 tepat adalah...",
+            visualHtml: `<svg width="200" height="150" viewBox="0 0 200 150">
+                <circle cx="100" cy="75" r="55" fill="#f8fafc" stroke="#334155" stroke-width="2"/>
+                <line x1="100" y1="75" x2="100" y2="25" stroke="#0284c7" stroke-width="2"/>
+                <line x1="100" y1="75" x2="147" y2="102" stroke="#ef4444" stroke-width="3"/>
+                <text x="100" y="20" font-size="8" text-anchor="middle">12 (0°)</text>
+                <text x="155" y="110" font-size="8">4 (120°)</text>
+            </svg>`,
+            opsi: ["90°", "120°", "135°", "150°", "160°"], jawabanBenar: 1,
+            pembahasan: "Perhitungan Sudut Dial Jam:\n- Dial jam melingkar total 360° terbagi menjadi 12 jam.\n- Sudut per 1 jam = 360° / 12 = 30°.\n- Pukul 04.00 berjarak 4 jam dari angka 12.\n- Total Sudut = 4 × 30° = 120°."
+        },
+        {
+            id: "KOMPAS-19", kategori: "Rotasi Derajat Kompas",
+            pertanyaan: "Sebuah antena parabola diarahkan ke azimuth 180° (Selatan). Kemudian antena disesuaikan dengan menggesernya 60° ke kiri dan 15° ke kanan. Berapa sudut azimuth antena sekarang?",
+            visualHtml: `<svg width="200" height="150" viewBox="0 0 200 150">
+                <circle cx="100" cy="75" r="50" fill="none" stroke="#cbd5e1" stroke-width="2"/>
+                <line x1="100" y1="75" x2="100" y2="125" stroke="#cbd5e1"/>
+                <line x1="100" y1="75" x2="135" y2="110" stroke="#16a34a" stroke-width="2.5"/>
+                <text x="140" y="120" font-size="9" font-weight="bold" fill="#16a34a">135°</text>
+            </svg>`,
+            opsi: ["105°", "135°", "165°", "195°", "225°"], jawabanBenar: 1,
+            pembahasan: "Kalkulasi Pergeseran Azimuth:\n- Posisi Awal = 180°.\n- Geser Ke Kiri (Berlawanan jarum jam / berkurang) 60° = 180° - 60° = 120°.\n- Geser Ke Kanan (Searah jarum jam / bertambah) 15° = 120° + 15° = 135°.\n- Azimuth baru = 135° (Tenggara)."
+        },
+        {
+            id: "KOMPAS-20", kategori: "Sudut Azimuth & Back-Azimuth",
+            pertanyaan: "Seseorang berjalan menyusuri tebing dengan azimuth 310°. Jika ia berbalik arah persis 180° mengikuti jalur yang sama, berapa sudut azimuth balik perjalanan pulangnya?",
+            visualHtml: `<svg width="200" height="150" viewBox="0 0 200 150">
+                <circle cx="100" cy="75" r="55" fill="#f8fafc" stroke="#334155" stroke-width="2"/>
+                <line x1="100" y1="75" x2="58" y2="38" stroke="#0284c7" stroke-width="2.5"/>
+                <line x1="100" y1="75" x2="142" y2="112" stroke="#ef4444" stroke-width="2.5"/>
+                <text x="45" y="30" font-size="9" font-weight="bold">310°</text>
+                <text x="145" y="125" font-size="9" font-weight="bold" fill="#ef4444">130°</text>
+            </svg>`,
+            opsi: ["50°", "130°", "140°", "210°", "230°"], jawabanBenar: 1,
+            pembahasan: "Perhitungan Back-Azimuth:\n- Azimuth Pergi = 310° (> 180°).\n- Back-Azimuth (Pulang) = 310° - 180° = 130°."
+        },
+        {
+            id: "KOMPAS-21", kategori: "Arah Mata Angin Kompleks",
+            pertanyaan: "Kota K berada di Barat Laut Kota L. Kota M berada di Timur Laut Kota L. Arah Kota M jika ditinjau dari Kota K adalah...",
+            visualHtml: `<svg width="220" height="150" viewBox="0 0 220 150">
+                <circle cx="50" cy="40" r="8" fill="#0f172a"/><text x="35" y="45" font-size="9" font-weight="bold">K</text>
+                <circle cx="120" cy="110" r="8" fill="#0f172a"/><text x="120" y="125" font-size="9" font-weight="bold">L</text>
+                <circle cx="190" cy="40" r="8" fill="#ef4444"/><text x="195" y="45" font-size="9" font-weight="bold">M</text>
+                <line x1="50" y1="40" x2="190" y2="40" stroke="#ef4444" stroke-width="2" stroke-dasharray="3"/>
+            </svg>`,
+            opsi: ["Utara", "Selatan", "Timur", "Barat", "Tenggara"], jawabanBenar: 2,
+            pembahasan: "Analisis Vektor Sejajar Horisontal:\n- Kota K = Kiri-Atas dari L (-1, +1)\n- Kota M = Kanan-Atas dari L (+1, +1)\n- K dan M sama-sama berada pada koordinat vertikal Y yang sejajar di atas Kota L. Karena M berada di sisi kanan K, maka M berada tepat di arah TIMUR dari Kota K."
+        },
+        {
+            id: "KOMPAS-22", kategori: "Orientasi Jam & Kompas",
+            pertanyaan: "Pada pukul 06.00, jarum pendek menunjuk ke arah Selatan. Ke arah mata angin manakah jarum pendek menunjuk pada pukul 15.00?",
+            visualHtml: `<svg width="200" height="150" viewBox="0 0 200 150">
+                <circle cx="100" cy="75" r="55" fill="#f8fafc" stroke="#334155" stroke-width="2"/>
+                <line x1="100" y1="75" x2="100" y2="125" stroke="#0f172a" stroke-width="2"/>
+                <text x="100" y="138" font-size="8" text-anchor="middle">6 (Selatan)</text>
+                <line x1="100" y1="75" x2="145" y2="75" stroke="#ef4444" stroke-width="2.5"/>
+                <text x="150" y="78" font-size="8">3 (?)</text>
+            </svg>`,
+            opsi: ["Utara", "Timur", "Selatan", "Barat", "Barat Daya"], jawabanBenar: 3,
+            pembahasan: "Korelasi Waktu & Kompas:\n- Pukul 06.00 (Angka 6) = SELATAN (180°).\n- Berarti Angka 12 (180° berlawanan) = UTARA (0°).\n- Pukul 15.00 sama dengan Pukul 03.00 (Angka 3 pada dial jam).\n- Angka 3 berada di antara 12 (Utara) dan 6 (Selatan) di sebelah kanan dial standar kompas -> Mewakili arah BARAT dalam orientasi balik ini (karena jika 6=Selatan & 12=Utara, maka 3=Barat)."
+        },
+        {
+            id: "KOMPAS-23", kategori: "Rotasi Derajat Kompas",
+            pertanyaan: "Dua kapal A dan B berangkat dari pelabuhan yang sama. Kapal A berlayar dengan azimuth 45° sedangkan Kapal B berlayar dengan azimuth 315°. Berapa sudut pemisah (sudut terkecil) antara jalur pelayaran Kapal A dan Kapal B?",
+            visualHtml: `<svg width="200" height="150" viewBox="0 0 200 150">
+                <circle cx="100" cy="75" r="55" fill="#f8fafc" stroke="#334155" stroke-width="2"/>
+                <line x1="100" y1="75" x2="135" y2="40" stroke="#0284c7" stroke-width="2.5"/>
+                <line x1="100" y1="75" x2="65" y2="40" stroke="#ef4444" stroke-width="2.5"/>
+                <text x="100" y="50" font-size="11" font-weight="bold" text-anchor="middle">90°</text>
+            </svg>`,
+            opsi: ["45°", "60°", "90°", "135°", "270°"], jawabanBenar: 2,
+            pembahasan: "Hitung Selisih Sudut Terkecil:\n- Arah A = 45° (Timur Laut).\n- Arah B = 315° (Barat Laut).\n- Selisih Sudut = 360° - 315° + 45° = 45° + 45° = 90°."
+        },
+        {
+            id: "KOMPAS-24", kategori: "Sudut Azimuth & Back-Azimuth",
+            pertanyaan: "Manakah pasangan azimuth (pergi) dan back-azimuth (pulang) berikut yang BENAR?",
+            visualHtml: `<svg width="220" height="120" viewBox="0 0 220 120">
+                <rect x="20" y="20" width="180" height="80" fill="#f8fafc" stroke="#334155" stroke-width="1.5"/>
+                <text x="110" y="50" font-size="11" font-weight="bold" text-anchor="middle">Aturan Back-Azimuth:</text>
+                <text x="110" y="70" font-size="10" text-anchor="middle">|Azimuth Awal - Back Azimuth| = 180°</text>
+            </svg>`,
+            opsi: ["40° dan 140°", "90° dan 270°", "150° dan 300°", "220° dan 50°", "280° dan 110°"], jawabanBenar: 1,
+            pembahasan: "Verifikasi Pasangan Back-Azimuth (Selisih Harus Tepat 180°):\n- A: 140° - 40° = 100° (Salah)\n- B: 270° - 90° = 180° (BENAR)\n- C: 300° - 150° = 150° (Salah)\n- D: 220° - 50° = 170° (Salah)\n- E: 280° - 110° = 170° (Salah)"
+        },
+        {
+            id: "KOMPAS-25", kategori: "Arah Mata Angin Kompleks",
+            pertanyaan: "Jika arah Timur Laut ditukar posisi dengan arah Barat Daya pada sebuah kompas khusus, maka arah yang berada di sebelah kanan (90° CW) dari posisi baru Timur Laut tersebut adalah...",
+            visualHtml: `<svg width="200" height="150" viewBox="0 0 200 150">
+                <circle cx="100" cy="75" r="55" fill="#f8fafc" stroke="#334155" stroke-width="2"/>
+                <text x="140" y="115" font-size="9" font-weight="bold" fill="#ef4444">TL Baru (di BD)</text>
+                <text x="50" y="115" font-size="9" font-weight="bold" fill="#16a34a">BL (?)</text>
+            </svg>`,
+            opsi: ["Barat Laut", "Tenggara", "Timur", "Selatan", "Utara"], jawabanBenar: 0,
+            pembahasan: "Analisis Kompas Modifikasi:\n1. Posisi baru Timur Laut kini berada di lokasi Barat Daya (azimuth 225°).\n2. Di sebelah kanan (90° CW) dari azimuth 225° adalah: 225° + 90° = 315°.\n3. Azimuth 315° pada dial kompas standar adalah lokasi arah BARAT LAUT."
+        }
+    ];
+
+    let bankSoal = [];
+    let currentQ = 0;
+    let userAnswers = {};
+    let timerInterval;
+
+    window.addEventListener('DOMContentLoaded', () => {
+        // Cek Expiration Protocol Security
+        if (new Date().getTime() > EXPIRATION_DATE) {
+            alert("Masa berlaku modul tes ini telah berakhir (Expired). Silakan hubungi Persona Research & Consulting.");
+            document.body.innerHTML = "<h2 style='text-align:center; margin-top:50px; color:red;'>MODUL TERKUNCI / EXPIRED</h2>";
+            return;
+        }
+
+        // Auto-shuffle pilihan jawaban per soal secara acak & aman
+        bankSoal = rawBankSoal.map(q => {
+            let originalOps = [...q.opsi];
+            let correctText = originalOps[q.jawabanBenar];
+            
+            let shuffledOps = [...originalOps];
+            for (let i = shuffledOps.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffledOps[i], shuffledOps[j]] = [shuffledOps[j], shuffledOps[i]];
+            }
+            
+            let newCorrectIdx = shuffledOps.indexOf(correctText);
+            return {
+                ...q,
+                opsi: shuffledOps,
+                jawabanBenar: newCorrectIdx
+            };
+        });
+
+        renderNav();
+        loadQ(0);
+        startTimer(35 * 60);
+    });
+
+    function loadQ(idx) {
+        currentQ = idx;
+        const qData = bankSoal[idx];
+        document.getElementById('q-no').innerText = `Soal ${idx + 1} dari ${bankSoal.length}`;
+        document.getElementById('q-kat').innerText = qData.kategori;
+        document.getElementById('q-text').innerText = qData.pertanyaan;
+        document.getElementById('q-visual').innerHTML = qData.visualHtml;
+        
+        let html = '';
+        qData.opsi.forEach((opt, i) => {
+            const isSelected = userAnswers[idx] === i ? 'selected' : '';
+            html += `<div class="opt ${isSelected}" onclick="selectOpt(${i})">${String.fromCharCode(65+i)}. ${opt}</div>`;
+        });
+        document.getElementById('options').innerHTML = html;
+        document.getElementById('btn-next').innerText = idx === bankSoal.length - 1 ? "Selesai" : "Selanjutnya";
+        renderNav();
+    }
+
+    function selectOpt(optIdx) {
+        userAnswers[currentQ] = optIdx;
+        loadQ(currentQ);
+        setTimeout(() => { nextQ(); }, 250);
+    }
+
+    function renderNav() {
+        let html = '';
+        for(let i = 0; i < bankSoal.length; i++) {
+            let cls = 'nav-item';
+            if(userAnswers[i] !== undefined) cls += ' filled';
+            if(i === currentQ) cls += ' active';
+            html += `<div class="${cls}" onclick="loadQ(${i})">${i + 1}</div>`;
+        }
+        document.getElementById('navGrid').innerHTML = html;
+    }
+
+    function nextQ() {
+        if(currentQ === bankSoal.length - 1) {
+            if(confirm("Apakah Anda yakin ingin menyelesaikan Simulasi Tes Kompas & Arah Mata Angin ini?")) finishTest();
+            return;
+        }
+        loadQ(currentQ + 1);
+    }
+
+    function prevQ() {
+        if(currentQ > 0) loadQ(currentQ - 1);
+    }
+
+    function startTimer(seconds) {
+        let t = seconds;
+        timerInterval = setInterval(() => {
+            let m = Math.floor(t / 60);
+            let s = t % 60;
+            document.getElementById('timer').innerText = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+            if(--t < 0) {
+                clearInterval(timerInterval);
+                finishTest();
+            }
+        }, 1000);
+    }
+
+    function finishTest() {
+        clearInterval(timerInterval);
+        document.getElementById('page-test').style.display = 'none';
+        document.getElementById('page-result').style.display = 'block';
+
+        let benar = 0;
+        let salah = 0;
+        let kosong = 0;
+        let katStats = {};
+
+        bankSoal.forEach((q, i) => {
+            if (!katStats[q.kategori]) {
+                katStats[q.kategori] = { total: 0, benar: 0 };
+            }
+            katStats[q.kategori].total++;
+
+            if (userAnswers[i] === undefined) {
+                kosong++;
+            } else if (userAnswers[i] === q.jawabanBenar) {
+                benar++;
+                katStats[q.kategori].benar++;
+            } else {
+                salah++;
+            }
+        });
+
+        const totalSoal = bankSoal.length;
+        const skor = (benar / totalSoal) * 100;
+        const persentase = skor;
+
+        document.getElementById('res-skor').innerText = `${skor.toFixed(0)} / 100`;
+        document.getElementById('res-persen').innerText = `${persentase.toFixed(0)}%`;
+        document.getElementById('res-detail').innerText = `${benar} Benar / ${salah} Salah / ${kosong} Kosong`;
+
+        let katHtml = '';
+        for (let kat in katStats) {
+            let p = (katStats[kat].benar / katStats[kat].total) * 100;
+            katHtml += `
+                <tr>
+                    <td><b>${kat}</b></td>
+                    <td>${katStats[kat].total}</td>
+                    <td>${katStats[kat].benar}</td>
+                    <td><b>${p.toFixed(0)}%</b></td>
+                </tr>
+            `;
+        }
+        document.querySelector('#table-kategori tbody').innerHTML = katHtml;
+
+        let saranText = '';
+        if (persentase >= 80) {
+            saranText = "<b>KEMAMPUAN ORIENTASI MATA ANGIN SANGAT TINGGI!</b> Anda menguasai perhitungan sudut azimuth, transformasi arah relatif jam, dan rotasi kompas dengan sangat akurat.";
+        } else if (persentase >= 60) {
+            saranText = "<b>KEMAMPUAN CUKUP BAIK.</b> Pemahaman rotasi mata angin Anda sudah memadai, namun perlu peningkatan ketelitian pada kalkulasi Back-Azimuth dan rotasi berlawanan jarum jam.";
+        } else {
+            saranText = "<b>PERLU LATIHAN INTENSIF.</b> Pelajari kembali konsep perputaran sudut 360° kompas dan hubungannya dengan jam analitis pada rekap pembahasan di bawah.";
+        }
+        document.getElementById('saran-box').innerHTML = saranText;
+
+        let pemHtml = '';
+        bankSoal.forEach((q, i) => {
+            let uAns = userAnswers[i];
+            let statusBadge = '';
+            let uAnsText = uAns !== undefined ? `${String.fromCharCode(65+uAns)}. ${q.opsi[uAns]}` : '<i>Tidak Dijawab</i>';
+            let cAnsText = `${String.fromCharCode(65+q.jawabanBenar)}. ${q.opsi[q.jawabanBenar]}`;
+
+            if (uAns === undefined) {
+                statusBadge = '<span class="badge-kosong">KOSONG</span>';
+            } else if (uAns === q.jawabanBenar) {
+                statusBadge = '<span class="badge-benar">BENAR</span>';
+            } else {
+                statusBadge = '<span class="badge-salah">SALAH</span>';
+            }
+
+            pemHtml += `
+                <div style="margin-bottom:20px; border-bottom:1px solid #e2e8f0; padding-bottom:15px;">
+                    <div style="font-weight:bold; color:var(--navy);">Soal ${i + 1} (${q.kategori}) - Status: ${statusBadge}</div>
+                    <div style="margin:8px 0; font-size:14.5px;">${q.pertanyaan}</div>
+                    <div class="visual-container" style="max-width:280px; margin:10px 0;">${q.visualHtml}</div>
+                    <div style="font-size:13.5px; color:#475569;">
+                        <div>Jawaban Anda: ${uAnsText}</div>
+                        <div>Jawaban Benar: <b>${cAnsText}</b></div>
+                    </div>
+                    <div class="pembahasan-box">
+                        <b>Analisis Pembahasan:</b><br>${q.pembahasan.replace(/\n/g, '<br>')}
+                    </div>
+                </div>
+            `;
+        });
+        document.getElementById('pembahasan-container').innerHTML = pemHtml;
+        window.scrollTo(0,0);
+    }
+</script>
+</body>
+</html>

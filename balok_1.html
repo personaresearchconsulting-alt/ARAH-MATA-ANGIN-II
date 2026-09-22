@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PERSONA RESEARCH & CONSULTING - Tes Penalaran Spasial & Denah Lokasi</title>
+    <style>
+        :root { --navy: #0b2340; --gold: #d4a017; --bg: #f8fafc; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: var(--bg); color: #1e293b; -webkit-user-select: none; user-select: none; }
+        header { background: var(--navy); color: white; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid var(--gold); }
+        .container { max-width: 950px; margin: 20px auto; padding: 0 15px; }
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .opt { padding: 14px; margin: 8px 0; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+        .opt:hover { background: #f1f5f9; border-color: var(--navy); }
+        .opt.selected { background: #e0f2fe; border-color: var(--navy); font-weight: bold; }
+        .nav-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 6px; margin-top: 15px; }
+        .nav-item { height: 35px; display: flex; align-items: center; justify-content: center; border: 1px solid #cbd5e1; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; }
+        .nav-item.filled { background: var(--navy); color: white; }
+        .nav-item.active { border: 2px solid var(--gold); }
+        .btn { background: var(--navy); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .btn:hover { opacity: 0.9; }
+        .btn-gold { background: var(--gold); color: var(--navy); }
+        #timer { font-size: 20px; font-weight: bold; color: var(--gold); font-family: monospace; }
+        
+        .visual-container { width: 100%; text-align: center; margin: 15px 0; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px; }
+        .visual-container svg { max-width: 100%; height: auto; max-height: 240px; }
+
+        .rekap-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
+        .rekap-table th, .rekap-table td { border: 1px solid #cbd5e1; padding: 8px 12px; text-align: left; }
+        .rekap-table th { background-color: var(--navy); color: white; }
+        .badge-benar { color: #16a34a; font-weight: bold; }
+        .badge-salah { color: #dc2626; font-weight: bold; }
+        .badge-kosong { color: #d97706; font-weight: bold; }
+        .pembahasan-box { background: #f1f5f9; border-left: 4px solid var(--navy); padding: 12px; margin-top: 10px; font-size: 13.5px; border-radius: 0 6px 6px 0; }
+        
+        @media print {
+            header, .no-print, button { display: none !important; }
+            body { background: white; color: black; -webkit-user-select: auto; user-select: auto; }
+            .container { max-width: 100%; margin: 0; padding: 0; }
+            .card { box-shadow: none; border: 1px solid #ccc; }
+        }
+    </style>
+</head>
+<body oncontextmenu="return false" onkeydown="return false">
+
+<div class="container">
+    <header>
+        <div>
+            <b>PERSONA RESEARCH & CONSULTING</b> | TES PENALARAN SPASIAL & DENAH LOKASI
+            <div style="font-size: 11px; font-weight: normal; color: #cbd5e1;">Latihan Penalaran Gambar & Posisi Lokasi — Persiapan Seleksi | WA: 0877 425 5786</div>
+        </div>
+        <div id="timer">30:00</div>
+    </header>
+
+    <!-- Halaman Pengerjaan Soal -->
+    <div id="page-test" style="margin-top:20px;">
+        <div style="display:flex; gap:20px; flex-wrap:wrap;">
+            <div style="flex:3; min-width:280px;">
+                <div class="card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                        <div id="q-no" style="font-weight:bold; color:var(--navy);">Soal 1 dari 25</div>
+                        <div id="q-kat" style="font-size:12px; background:#e0f2fe; color:var(--navy); padding:3px 8px; border-radius:4px; font-weight:600;">Kategori</div>
+                    </div>
+                    <div id="q-text" style="font-size:15px; line-height:1.6; margin-bottom:15px;"></div>
+                    <div id="q-visual" class="visual-container"></div>
+                    <div id="options"></div>
+                    <div style="margin-top:25px; display:flex; justify-content:space-between;">
+                        <button class="btn" onclick="prevQ()" style="background:#64748b">Sebelumnya</button>
+                        <button class="btn" id="btn-next" onclick="nextQ()">Selanjutnya</button>
+                    </div>
+                </div>
+            </div>
+
+            <div style="flex:1; min-width:220px;">
+                <div class="card" style="padding:15px;">
+                    <div style="text-align:center; font-size:12px; font-weight:bold; margin-bottom:10px; color:var(--navy);">NAVIGASI SOAL</div>
+                    <div id="navGrid" class="nav-grid"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Halaman Hasil & Pembahasan -->
+    <div id="page-result" style="display:none; margin-top:20px;">
+        <div class="card">
+            <h2 style="color:var(--navy); border-bottom:2px solid var(--gold); padding-bottom:10px; margin-top:0;">HASIL TES PENALARAN SPASIAL & DENAH LOKASI</h2>
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:15px; margin:20px 0;">
+                <div style="background:#f1f5f9; padding:12px; border-radius:8px; text-align:center;">
+                    <div style="font-size:12px; color:#64748b;">SKOR AKHIR</div>
+                    <div id="res-skor" style="font-size:22px; font-weight:bold; color:var(--navy);">-</div>
+                </div>
+                <div style="background:#f1f5f9; padding:12px; border-radius:8px; text-align:center;">
+                    <div style="font-size:12px; color:#64748b;">PERSENTASE</div>
+                    <div id="res-persen" style="font-size:22px; font-weight:bold; color:var(--navy);">-</div>
+                </div>
+                <div style="background:#f1f5f9; padding:12px; border-radius:8px; text-align:center;">
+                    <div style="font-size:12px; color:#64748b;">BENAR / SALAH / KOSONG</div>
+                    <div id="res-detail" style="font-size:16px; font-weight:bold; color:var(--navy);">-</div>
+                </div>
+            </div>
+
+            <button class="btn btn-gold no-print" onclick="window.print()" style="width:100%; margin-bottom:20px; font-size:15px;">DOWNLOAD / PRINT HASIL PDF</button>
+
+            <h3 style="color:var(--navy); margin-top:25px;">ANALISIS PER KATEGORI KEMAMPUAN</h3>
+            <table class="rekap-table" id="table-kategori">
+                <thead>
+                    <tr>
+                        <th>Kategori Kemampuan</th>
+                        <th>Jumlah Soal</th>
+                        <th>Benar</th>
+                        <th>Persentase</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+
+            <h3 style="color:var(--navy); margin-top:25px;">SARAN & REKOMENDASI LATIHAN</h3>
+            <div id="saran-box" class="pembahasan-box" style="border-left-color:var(--gold);"></div>
+
+            <h3 style="color:var(--navy); margin-top:25px;">REKAP JAWABAN & PEMBAHASAN LENGKAP</h3>
+            <div id="pembahasan-container"></div>
+
+            <div style="margin-top:20px;" class="no-print">
+                <button class="btn" onclick="location.reload()" style="width:100%; padding:12px;">ULANGI TES SPASIAL</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const rawBankSoal = [
+        {
+            id: "S-01", kategori: "Hitung Jumlah Blok 3D",
+            pertanyaan: "Amati gambar susunan kotak di bawah ini. Jika dilihat dari atas sampai bawah, berapa total seluruh kotak yang menyusun bangunan tersebut?",
+            visualHtml: `<svg width="220" height="150" viewBox="0 0 220 150">
+                <g stroke="#1e293b" stroke-width="1.5">
+                    <!-- Bawah (3 kotak) -->
+                    <path d="M30,90 L70,70 L110,90 L70,110 Z" fill="#cbd5e1"/>
+                    <path d="M30,90 L70,110 L70,130 L30,110 Z" fill="#94a3b8"/>
+                    <path d="M70,110 L110,90 L110,110 L70,130 Z" fill="#64748b"/>
+                    
+                    <path d="M70,70 L110,50 L150,70 L110,90 Z" fill="#cbd5e1"/>
+                    <path d="M110,90 L150,70 L150,90 L110,110 Z" fill="#64748b"/>
+
+                    <path d="M110,90 L150,70 L190,90 L150,110 Z" fill="#cbd5e1"/>
+                    <path d="M150,110 L190,90 L190,110 L150,130 Z" fill="#64748b"/>
+
+                    <!-- Atas (1 kotak menumpuk di tengah) -->
+                    <path d="M70,40 L110,20 L150,40 L110,60 Z" fill="#e2e8f0"/>
+                    <path d="M70,40 L110,60 L110,80 L70,60 Z" fill="#cbd5e1"/>
+                    <path d="M110,60 L150,40 L150,60 L110,80 Z" fill="#94a3b8"/>
+                </g>
+            </svg>`,
+            opsi: ["3 kotak", "4 kotak", "5 kotak", "6 kotak", "7 kotak"], jawabanBenar: 2,
+            pembahasan: "Kotak di lantai dasar ada 3 buah yang berderet. Di atas kotak tengah, terdapat 1 kotak lagi yang menumpuk. Namun, agar kotak paling atas tidak melayang, harus ada 1 kotak penopang di bawahnya. Jadi totalnya: 3 kotak di dasar + 1 kotak di atas + 1 kotak penopang yang tersembunyi = 5 kotak."
+        },
+        {
+            id: "S-02", kategori: "Denah & Arah Lokasi",
+            pertanyaan: "Perhatikan denah jalan dan posisi gedung di bawah ini. Jika Anda berjalan dari Gedung A menuju Gedung D melalui jalan utama, gedung apa yang berada tepat di sebelah kiri Anda sebelum belok ke Gedung D?",
+            visualHtml: `<svg width="260" height="160" viewBox="0 0 260 160">
+                <rect x="10" y="10" width="240" height="140" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+                <!-- Jalan -->
+                <rect x="20" y="65" width="220" height="30" fill="#e2e8f0"/>
+                <rect x="115" y="20" width="30" height="120" fill="#e2e8f0"/>
+                <!-- Blok Gedung -->
+                <rect x="30" y="25" width="65" height="30" fill="#0284c7"/><text x="42" y="45" fill="#fff" font-size="11" font-weight="bold">Gedung A</text>
+                <rect x="165" y="25" width="65" height="30" fill="#16a34a"/><text x="177" y="45" fill="#fff" font-size="11" font-weight="bold">Gedung B</text>
+                <rect x="30" y="105" width="65" height="30" fill="#ea580c"/><text x="42" y="125" fill="#fff" font-size="11" font-weight="bold">Gedung C</text>
+                <rect x="165" y="105" width="65" height="30" fill="#9333ea"/><text x="177" y="125" fill="#fff" font-size="11" font-weight="bold">Gedung D</text>
+                <text x="230" y="30" font-size="12" font-weight="bold" fill="#0b2340">U ↑</text>
+            </svg>`,
+            opsi: ["Gedung A", "Gedung B", "Gedung C", "Gedung D", "Tidak ada gedung"], jawabanBenar: 1,
+            pembahasan: "Saat bergerak dari Gedung A ke timur (arah perempatan), pandangan kita menghadap ke depan (Timur). Sisi sebelah kiri kita adalah arah Utara. Di sebelah kiri jalan utama sebelum kita belok ke selatan menuju Gedung D, terletak Gedung B."
+        },
+        {
+            id: "S-03", kategori: "Potongan & Jaring Lipatan",
+            pertanyaan: "Jika pola jaring-jaring di bawah ini dilipat menjadi kotak/kubus, sisi nomor berapa yang akan saling berhadapan tegak lurus dengan sisi nomor 2?",
+            visualHtml: `<svg width="220" height="150" viewBox="0 0 220 150">
+                <g stroke="#1e293b" stroke-width="2" font-size="14" font-weight="bold" text-anchor="middle">
+                    <rect x="80" y="10" width="35" height="35" fill="#38bdf8"/><text x="97" y="32" fill="#fff">1</text>
+                    <rect x="45" y="45" width="35" height="35" fill="#818cf8"/><text x="62" y="67" fill="#fff">2</text>
+                    <rect x="80" y="45" width="35" height="35" fill="#f43f5e"/><text x="97" y="67" fill="#fff">3</text>
+                    <rect x="115" y="45" width="35" height="35" fill="#34d399"/><text x="132" y="67" fill="#fff">4</text>
+                    <rect x="150" y="45" width="35" height="35" fill="#fbbf24"/><text x="167" y="67" fill="#fff">5</text>
+                    <rect x="80" y="80" width="35" height="35" fill="#a855f7"/><text x="97" y="102" fill="#fff">6</text>
+                </g>
+            </svg>`,
+            opsi: ["Nomor 1", "Nomor 3", "Nomor 4", "Nomor 5", "Nomor 6"], jawabanBenar: 2,
+            pembahasan: "Aturan lipatan kotak berselang satu langkah: Sisi 2 berhadapan langsung dengan Sisi 4. Sisi 1 berhadapan dengan Sisi 6. Sisi 3 berhadapan dengan Sisi 5. Jadi penjelasannya, pasangan nomor 2 adalah nomor 4."
+        },
+        {
+            id: "S-04", kategori: "Sudut Pandang Tampak",
+            pertanyaan: "Amati bentuk gedung bertingkat 3D di bawah ini. Jika Anda melihatnya dari arah SAMPING KANAN, gambar bentuk yang benar adalah...",
+            visualHtml: `<svg width="200" height="150" viewBox="0 0 200 150">
+                <g stroke="#1e293b" stroke-width="1.5">
+                    <!-- Gedung Utama L -->
+                    <path d="M40,80 L80,60 L120,80 L80,100 Z" fill="#38bdf8"/>
+                    <path d="M40,80 L80,100 L80,130 L40,110 Z" fill="#0284c7"/>
+                    <path d="M80,100 L120,80 L120,110 L80,130 Z" fill="#0369a1"/>
+                    
+                    <!-- Menara Tinggi di Kanan Belakang -->
+                    <path d="M120,40 L150,25 L180,40 L150,55 Z" fill="#fbbf24"/>
+                    <path d="M120,40 L150,55 L150,110 L120,95 Z" fill="#d97706"/>
+                    <path d="M150,55 L180,40 L180,95 L150,110 Z" fill="#b45309"/>
+                </g>
+            </svg>`,
+            opsi: ["Menara tinggi berada di sebelah kiri gedung rendah", "Menara tinggi berada di sebelah kanan gedung rendah", "Gedung rendah menutupi seluruh menara tinggi", "Tampak seperti dua tiang sejajar sama tinggi", "Hanya terlihat satu kotak persegi datar"], jawabanBenar: 0,
+            pembahasan: "Jika dilihat dari samping kanan, posisi menara tinggi yang berada di belakang kanan akan bergeser kelihatan di sebelah kiri, sedangkan gedung depan yang lebih rendah berada di sebelah kanan."
+        },
+        {
+            id: "S-05", kategori: "Denah & Arah Lokasi",
+            pertanyaan: "Di dalam area kompleks: Rumah Sakit ada di sebelah utara Pasar. Bank ada di sebelah timur Rumah Sakit. Kantor Polisi ada di sebelah selatan Bank sejajar dengan Pasar. Posisi Pasar terhadap Kantor Polisi berada di sebelah...",
+            visualHtml: `<svg width="220" height="140" viewBox="0 0 220 140">
+                <rect x="10" y="10" width="200" height="120" rx="8" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="2"/>
+                <circle cx="50" cy="35" r="18" fill="#0284c7"/><text x="50" y="39" fill="#fff" font-size="10" font-weight="bold" text-anchor="middle">RS</text>
+                <circle cx="160" cy="35" r="18" fill="#16a34a"/><text x="160" y="39" fill="#fff" font-size="10" font-weight="bold" text-anchor="middle">Bank</text>
+                <circle cx="50" cy="105" r="18" fill="#ea580c"/><text x="50" y="109" fill="#fff" font-size="10" font-weight="bold" text-anchor="middle">Pasar</text>
+                <circle cx="160" cy="105" r="18" fill="#dc2626"/><text x="160" y="109" fill="#fff" font-size="9" font-weight="bold" text-anchor="middle">Polisi</text>
+            </svg>`,
+            opsi: ["Utara", "Selatan", "Timur", "Barat", "Barat Daya"], jawabanBenar: 3,
+            pembahasan: "Rumah Sakit (Kiri-Atas), Bank (Kanan-Atas), Pasar (Kiri-Bawah), Polisi (Kanan-Bawah). Maka, posisi Pasar jika dilihat dari Kantor Polisi terletak lurus di sebelah Barat."
+        },
+        {
+            id: "S-06", kategori: "Hitung Jumlah Blok 3D",
+            pertanyaan: "Berapa total blok persegi bertingkat yang membentuk struktur tangga berikut ini?",
+            visualHtml: `<svg width="220" height="140" viewBox="0 0 220 140">
+                <g stroke="#1e293b" stroke-width="1.5">
+                    <!-- Tangga 1 (Depan) -->
+                    <path d="M30,80 L60,65 L90,80 L60,95 Z" fill="#e2e8f0"/>
+                    <path d="M30,80 L60,95 L60,115 L30,100 Z" fill="#cbd5e1"/>
+                    <path d="M60,95 L90,80 L90,100 L60,115 Z" fill="#94a3b8"/>
+                    <!-- Tangga 2 (Tengah) -->
+                    <path d="M60,50 L90,35 L120,50 L90,65 Z" fill="#e2e8f0"/>
+                    <path d="M90,65 L120,50 L120,100 L90,115 Z" fill="#94a3b8"/>
+                    <!-- Tangga 3 (Belakang) -->
+                    <path d="M90,20 L120,5 L150,20 L120,35 Z" fill="#e2e8f0"/>
+                    <path d="M120,35 L150,20 L150,100 L120,115 Z" fill="#94a3b8"/>
+                </g>
+            </svg>`,
+            opsi: ["3 blok", "4 blok", "5 blok", "6 blok", "8 blok"], jawabanBenar: 3,
+            pembahasan: "Tangga pertama = 1 blok. Tangga kedua = 2 blok (1 kelihatan + 1 di bawahnya). Tangga ketiga = 3 blok (1 kelihatan + 2 di bawahnya). Total keseluruhan = 1 + 2 + 3 = 6 blok."
+        },
+        {
+            id: "S-07", kategori: "Rotasi & Arah Pandang",
+            pertanyaan: "Jika sebuah kamera pengawas gedung diputar sebesar 90 derajat searah jarum jam dari posisi semula yang menghadap ke UTARA, lalu diputar lagi 180 derajat, arah pandang kamera sekarang adalah...",
+            visualHtml: `<svg width="180" height="140" viewBox="0 0 180 140">
+                <circle cx="90" cy="70" r="50" fill="none" stroke="#0b2340" stroke-width="2" stroke-dasharray="4"/>
+                <line x1="90" y1="20" x2="90" y2="120" stroke="#cbd5e1" stroke-width="2"/>
+                <line x1="40" y1="70" x2="140" y2="70" stroke="#cbd5e1" stroke-width="2"/>
+                <!-- Panah Awal -->
+                <line x1="90" y1="70" x2="90" y2="30" stroke="#dc2626" stroke-width="3" marker-end="url(#arrow)"/>
+                <text x="90" y="15" text-anchor="middle" font-weight="bold" font-size="12">U</text>
+                <text x="150" y="74" text-anchor="middle" font-weight="bold" font-size="12">T</text>
+                <text x="90" y="135" text-anchor="middle" font-weight="bold" font-size="12">S</text>
+                <text x="30" y="74" text-anchor="middle" font-weight="bold" font-size="12">B</text>
+            </svg>`,
+            opsi: ["Utara", "Selatan", "Timur", "Barat", "Barat Daya"], jawabanBenar: 3,
+            pembahasan: "Menghadap Utara (0°). Diputar 90° searah jarum jam = Menghadap Timur. Kemudian diputar 180° (berbalik arah) = Menghadap Barat."
+        },
+        {
+            id: "S-08", kategori: "Denah & Arah Lokasi",
+            pertanyaan: "Amati denah lokasi perumahan berikut. Rute terpendek untuk ambulans berjalan dari Puskesmas menuju Rumah B tanpa melewati jalan buntu adalah...",
+            visualHtml: `<svg width="240" height="150" viewBox="0 0 240 150">
+                <rect x="10" y="10" width="220" height="130" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2"/>
+                <!-- Jalan Terbuka -->
+                <path d="M30,40 L210,40 M120,40 L120,120 M210,40 L210,120" stroke="#94a3b8" stroke-width="12" fill="none"/>
+                <!-- Jalan Buntu -->
+                <line x1="30" y1="40" x2="30" y2="100" stroke="#dc2626" stroke-width="8"/>
+                <text x="30" y="115" font-size="9" fill="#dc2626" text-anchor="middle">Buntu</text>
+
+                <rect x="40" y="15" width="50" height="20" fill="#0284c7"/><text x="65" y="29" fill="#fff" font-size="9" text-anchor="middle">Puskesmas</text>
+                <rect x="140" y="100" width="50" height="20" fill="#16a34a"/><text x="165" y="114" fill="#fff" font-size="9" text-anchor="middle">Rumah B</text>
+            </svg>`,
+            opsi: ["Lurus ke selatan lalu belok timur", "Lurus ke timur, belok selatan di persimpangan tengah", "Lurus ke timur sampai ujung, lalu belok selatan", "Putar balik ke arah barat", "Tidak ada jalan yang bisa dilalui"], jawabanBenar: 1,
+            pembahasan: "Jalan ke arah selatan langsung dari Puskesmas mengalami buntu. Jalur yang benar dan paling pendek adalah bergerak ke timur menyusuri jalan utama, kemudian belok ke selatan pada persimpangan tengah."
+        },
+        {
+            id: "S-09", kategori: "Potongan & Jaring Lipatan",
+            pertanyaan: "Bentuk pola gambar di bawah jika dirangkai/dilipat akan membentuk bangun 3D...",
+            visualHtml: `<svg width="200" height="140" viewBox="0 0 200 140">
+                <g stroke="#0b2340" stroke-width="1.5" fill="#e0f2fe">
+                    <polygon points="100,20 140,80 60,80"/>
+                    <polygon points="60,80 140,80 100,130"/>
+                    <polygon points="60,80 100,130 30,110"/>
+                    <polygon points="140,80 170,110 100,130"/>
+                </g>
+            </svg>`,
+            opsi: ["Kubus / Kotak", "Piramida Segitiga (Limas)", "Tabung", "Prisma Segitiga Panjang", "Kerucut"], jawabanBenar: 1,
+            pembahasan: "Rangkaian gambar tersebut terdiri dari 4 buah segitiga yang menyatu di setiap sisinya. Jika dilipat ke atas, pola ini membentuk Bangun Limas Segitiga (Piramida)."
+        },
+        {
+            id: "S-010", kategori: "Sudut Pandang Tampak",
+            pertanyaan: "Dilihat persis dari posisi ATAS (Tampak Atas), bayangan denah susunan gedung berikut akan berbentuk...",
+            visualHtml: `<svg width="220" height="140" viewBox="0 0 220 140">
+                <g stroke="#1e293b" stroke-width="1.5">
+                    <path d="M50,90 L90,70 L130,90 L90,110 Z" fill="#38bdf8"/>
+                    <path d="M50,90 L90,110 L90,130 L50,110 Z" fill="#0284c7"/>
+                    <path d="M90,110 L130,90 L130,110 L90,130 Z" fill="#0369a1"/>
+
+                    <path d="M90,50 L130,30 L170,50 L130,70 Z" fill="#f43f5e"/>
+                    <path d="M90,50 L130,70 L130,110 L90,90 Z" fill="#e11d48"/>
+                    <path d="M130,70 L170,50 L170,90 L130,110 Z" fill="#be123c"/>
+                </g>
+            </svg>`,
+            opsi: ["Dua jajaran genjang", "Dua Persegi Panjang / Persegi berdampingan", "Satu segitiga besar", "Tiga lingkaran sejajar", "Bentuk huruf T"], jawabanBenar: 1,
+            pembahasan: "Meskipun dari samping berbentuk 3D, jika dipandang lurus tepat dari atas (Top View), semua efek ketinggian hilang dan hanya terlihat permukaan atapnya saja yang berbentuk 2 buah Kotak/Persegi berdampingan."
+        },
+        {
+            id: "S-011", kategori: "Denah & Arah Lokasi",
+            pertanyaan: "Gedung Kantor Pusat berjarak 100 meter di sebelah utara Lapangan. Lapangan berjarak 100 meter di sebelah timur Kantin. Jika Anda berada di Kantin, arah Gedung Kantor Pusat adalah di...",
+            visualHtml: `<svg width="200" height="140" viewBox="0 0 200 140">
+                <rect x="20" y="90" width="40" height="30" fill="#f59e0b"/><text x="40" y="108" fill="#fff" font-size="9" text-anchor="middle">Kantin</text>
+                <rect x="130" y="90" width="50" height="30" fill="#10b981"/><text x="155" y="108" fill="#fff" font-size="9" text-anchor="middle">Lapangan</text>
+                <rect x="130" y="20" width="50" height="30" fill="#0284c7"/><text x="155" y="38" fill="#fff" font-size="8" text-anchor="middle">Kantor Pusat</text>
+                <path d="M60,105 L130,105 M155,90 L155,50" stroke="#94a3b8" stroke-width="2" stroke-dasharray="4"/>
+            </svg>`,
+            opsi: ["Utara", "Timur Laut", "Tenggara", "Barat Daya", "Barat Laut"], jawabanBenar: 1,
+            pembahasan: "Dari Kantin, bergerak ke Lapangan harus ke arah Timur (+X). Dari Lapangan ke Kantor Pusat harus ke arah Utara (+Y). Perpaduan arah Timur dan Utara menghasilkan posisi Timur Laut."
+        },
+        {
+            id: "S-012", kategori: "Hitung Jumlah Blok 3D",
+            pertanyaan: "Berapa jumlah kotak tersembunyi yang TIDAK KELIATAN pada gambar susunan balok 3D berikut?",
+            visualHtml: `<svg width="200" height="140" viewBox="0 0 200 140">
+                <g stroke="#1e293b" stroke-width="1.5">
+                    <!-- Layer Bawah L LENGKAP 4 kotak -->
+                    <path d="M40,70 L70,55 L100,70 L70,85 Z" fill="#cbd5e1"/>
+                    <path d="M70,55 L100,40 L130,55 L100,70 Z" fill="#cbd5e1"/>
+                    <path d="M100,40 L130,25 L160,40 L130,55 Z" fill="#cbd5e1"/>
+                    <!-- Layer Atas 1 Kotak di paling belakang -->
+                    <path d="M100,20 L130,5 L160,20 L130,35 Z" fill="#38bdf8"/>
+                    <path d="M100,20 L130,35 L130,55 L100,40 Z" fill="#0284c7"/>
+                    <path d="M130,35 L160,20 L160,40 L130,55 Z" fill="#0369a1"/>
+                </g>
+            </svg>`,
+            opsi: ["1 kotak", "2 kotak", "3 kotak", "4 kotak", "Tidak ada"], jawabanBenar: 0,
+            pembahasan: "Kotak berwarna biru berada di lantai atas (tingkat 2). Kotak ini membutuhkan 1 kotak penyangga tepat di bawahnya agar bisa berdiri tegak. Kotak penyangga bawah itulah yang berada dalam posisi tersembunyi (1 kotak)."
+        },
+        {
+            id: "S-013", kategori: "Rotasi & Arah Pandang",
+            pertanyaan: "Sebuah bus melaju ke arah BARAT. Di perempatan bus belok KIRI, kemudian belok KANAN, lalu belok KANAN lagi. Arah tujuan bus sekarang adalah ke...",
+            visualHtml: `<svg width="200" height="120" viewBox="0 0 200 120">
+                <path d="M180,30 L120,30 L120,80 L60,80 L60,20" stroke="#0284c7" stroke-width="4" fill="none" marker-end="url(#arrow)"/>
+                <circle cx="180" cy="30" r="4" fill="#0b2340"/>
+                <text x="180" y="20" font-size="10" font-weight="bold">Start (Barat)</text>
+            </svg>`,
+            opsi: ["Utara", "Selatan", "Timur", "Barat", "Tenggara"], jawabanBenar: 0,
+            pembahasan: "1. Awal ke Barat -> Belok Kiri = Menghadap Selatan.\n2. Dari Selatan -> Belok Kanan = Menghadap Barat.\n3. Dari Barat -> Belok Kanan = Menghadap Utara."
+        },
+        {
+            id: "S-014", kategori: "Denah & Arah Lokasi",
+            pertanyaan: "Perhatikan peta rute blok berikut. Posisi Mobil Polisi berada di titik A. Rute belokan paling efisien menuju Pos B tanpa memutar balik adalah...",
+            visualHtml: `<svg width="220" height="140" viewBox="0 0 220 140">
+                <rect x="20" y="20" width="180" height="100" fill="none" stroke="#64748b" stroke-width="12"/>
+                <line x1="110" y1="20" x2="110" y2="120" stroke="#64748b" stroke-width="12"/>
+                <circle cx="30" cy="30" r="8" fill="#dc2626"/><text x="30" y="33" fill="#fff" font-size="9" text-anchor="middle">A</text>
+                <circle cx="190" cy="110" r="8" fill="#16a34a"/><text x="190" y="113" fill="#fff" font-size="9" text-anchor="middle">B</text>
+            </svg>`,
+            opsi: ["Lurus ke Timur, belok Selatan di tengah, belok Timur di bawah", "Lurus ke Selatan, belok Timur, belok Utara", "Putar balik ke Barat", "Lurus ke Selatan langsung", "Lurus ke Timur sampai habis, baru belok Barat"], jawabanBenar: 0,
+            pembahasan: "Posisi A ada di Kiri-Atas, B di Kanan-Bawah. Rute paling cepat dan mulus tanpa harus memutar jalur adalah bergerak ke Timur sepanjang jalur atas, turun ke Selatan di jalur tengah, lalu lanjut ke Timur di jalur bawah."
+        },
+        {
+            id: "S-015", kategori: "Potongan & Jaring Lipatan",
+            pertanyaan: "Dua bentuk segitiga siku-siku sama besar jika disatukan pada sisi miringnya akan membentuk bangun datar...",
+            visualHtml: `<svg width="200" height="120" viewBox="0 0 200 120">
+                <polygon points="30,20 30,90 100,90" fill="#cbd5e1" stroke="#1e293b" stroke-width="1.5"/>
+                <polygon points="170,20 170,90 100,20" fill="#94a3b8" stroke="#1e293b" stroke-width="1.5"/>
+            </svg>`,
+            opsi: ["Persegi Panjang atau Jajaran Genjang", "Lingkaran", "Trapesium Sama Kaki", "Segitiga Sama Sisi", "Layang-layang sempurna"], jawabanBenar: 0,
+            pembahasan: "Dua segitiga siku-siku yang sama persis jika ditempelkan sisi miringnya yang sama panjang akan menghasilkan bentuk Persegi Panjang (jika posisi tegak) atau Jajaran Genjang."
+        },
+        {
+            id: "S-016", kategori: "Sudut Pandang Tampak",
+            pertanyaan: "Pengamat berdiri di posisi Bintang (★). Apa yang dilihat oleh pengamat pada struktur bangunan di bawah ini?",
+            visualHtml: `<svg width="220" height="140" viewBox="0 0 220 140">
+                <rect x="70" y="40" width="80" height="60" fill="#0284c7" stroke="#0b2340" stroke-width="2"/>
+                <polygon points="110,10 70,40 150,40" fill="#ea580c" stroke="#0b2340" stroke-width="2"/>
+                <text x="30" y="75" font-size="20">★</text>
+            </svg>`,
+            opsi: ["Dinding bangunan dengan atap segitiga di atasnya", "Hanya atap berbentuk segitiga datar", "Atap berbentuk lingkaran", "Sisi belakang gedung polos", "Hanya terlihat garis lurus tanpa bentuk"], jawabanBenar: 0,
+            pembahasan: "Pengamat berdiri dari samping kiri depan. Dari posisi ini, pengamat melihat bagian badan tembok gedung berbentuk kotak persegi dan bagian atas atapnya yang miring berbentuk segitiga."
+        },
+        {
+            id: "S-017", kategori: "Denah & Arah Lokasi",
+            pertanyaan: "Di sebuah Peta Komando: Pos A berjarak 3 km di Barat Pos B. Pos C berjarak 4 km di Utara Pos A. Jarak garis lurus terdekat dari Pos C menuju Pos B adalah...",
+            visualHtml: `<svg width="200" height="140" viewBox="0 0 200 140">
+                <line x1="40" y1="100" x2="160" y2="100" stroke="#1e293b" stroke-width="2"/>
+                <line x1="40" y1="100" x2="40" y2="30" stroke="#1e293b" stroke-width="2"/>
+                <line x1="40" y1="30" x2="160" y2="100" stroke="#dc2626" stroke-width="2" stroke-dasharray="4"/>
+                <circle cx="40" cy="100" r="4" fill="#0b2340"/><text x="25" y="115" font-size="10" font-weight="bold">Pos A</text>
+                <circle cx="160" cy="100" r="4" fill="#0b2340"/><text x="165" y="115" font-size="10" font-weight="bold">Pos B</text>
+                <circle cx="40" cy="30" r="4" fill="#0b2340"/><text x="25" y="25" font-size="10" font-weight="bold">Pos C</text>
+            </svg>`,
+            opsi: ["3 km", "4 km", "5 km", "7 km", "12 km"], jawabanBenar: 2,
+            pembahasan: "Gunakan rumus Phytagoras sederhana untuk segitiga siku-siku: Jarak = √(3² + 4²) = √(9 + 16) = √25 = 5 km."
+        },
+        {
+            id: "S-018", kategori: "Hitung Jumlah Blok 3D",
+            pertanyaan: "Berapa total blok kubus pada susunan berikut?",
+            visualHtml: `<svg width="200" height="140" viewBox="0 0 200 140">
+                <g stroke="#1e293b" stroke-width="1.5">
+                    <!-- 2 Kotak Berdampingan -->
+                    <path d="M40,80 L80,60 L120,80 L80,100 Z" fill="#cbd5e1"/>
+                    <path d="M40,80 L80,100 L80,120 L40,100 Z" fill="#94a3b8"/>
+                    <path d="M80,100 L120,80 L120,100 L80,120 Z" fill="#64748b"/>
+
+                    <path d="M80,60 L120,40 L160,60 L120,80 Z" fill="#cbd5e1"/>
+                    <path d="M120,80 L160,60 L160,80 L120,100 Z" fill="#64748b"/>
+                </g>
+            </svg>`,
+            opsi: ["1 blok", "2 blok", "3 blok", "4 blok", "5 blok"], jawabanBenar: 1,
+            pembahasan: "Sangat jelas terlihat di permukaan ada 2 buah kubus yang sejajar ditaruh berdampingan di lantai dasar tanpa ada tumpukan di atasnya. Jadi totalnya = 2 blok."
+        },
+        {
+            id: "S-019", kategori: "Rotasi & Arah Pandang",
+            pertanyaan: "Petugas berada di titik tengah menghadap ke TIMUR LAUT. Jika ia berputar 180 derajat, arah pandangannya sekarang menjadi...",
+            visualHtml: `<svg width="180" height="140" viewBox="0 0 180 140">
+                <line x1="30" y1="110" x2="150" y2="30" stroke="#dc2626" stroke-width="2" marker-end="url(#arrow)"/>
+                <text x="155" y="25" font-size="10" font-weight="bold">TL</text>
+                <text x="15" y="125" font-size="10" font-weight="bold">BD</text>
+                <circle cx="90" cy="70" r="4" fill="#0b2340"/>
+            </svg>`,
+            opsi: ["Barat Daya", "Barat Laut", "Tenggara", "Utara", "Selatan"], jawabanBenar: 0,
+            pembahasan: "Rotasi sebesar 180 derajat artinya berbalik arah lurus ke belakang. Kebalikan dari arah Timur Laut adalah arah Barat Daya."
+        },
+        {
+            id: "S-020", kategori: "Denah & Arah Lokasi",
+            pertanyaan: "Di area perkantoran: Gedung X berada di selatan Gedung Y. Gedung Z berada di timur Gedung X. Arah Gedung Y dari Gedung Z adalah...",
+            visualHtml: `<svg width="200" height="140" viewBox="0 0 200 140">
+                <rect x="40" y="20" width="45" height="30" fill="#0284c7"/><text x="62" y="38" fill="#fff" font-size="10" text-anchor="middle">Gedung Y</text>
+                <rect x="40" y="85" width="45" height="30" fill="#16a34a"/><text x="62" y="103" fill="#fff" font-size="10" text-anchor="middle">Gedung X</text>
+                <rect x="130" y="85" width="45" height="30" fill="#f59e0b"/><text x="152" y="103" fill="#fff" font-size="10" text-anchor="middle">Gedung Z</text>
+            </svg>`,
+            opsi: ["Barat Laut", "Barat Daya", "Timur Laut", "Tenggara", "Utara"], jawabanBenar: 0,
+            pembahasan: "Gedung Z ada di sebelah kanan bawah. Gedung Y ada di sebelah kiri atas. Maka dari arah Gedung Z, posisi Gedung Y terletak di sebelah Barat Laut."
+        },
+        {
+            id: "S-021", kategori: "Potongan & Jaring Lipatan",
+            pertanyaan: "Manakah pasangan sisi yang saling berbelakang / berhadapan pada kotak kubus berikut?",
+            visualHtml: `<svg width="200" height="120" viewBox="0 0 200 120">
+                <g stroke="#1e293b" stroke-width="1.5" font-size="11" font-weight="bold" text-anchor="middle">
+                    <rect x="20" y="45" width="30" height="30" fill="#e2e8f0"/><text x="35" y="65">A</text>
+                    <rect x="50" y="45" width="30" height="30" fill="#cbd5e1"/><text x="65" y="65">B</text>
+                    <rect x="80" y="45" width="30" height="30" fill="#e2e8f0"/><text x="95" y="65">C</text>
+                    <rect x="110" y="45" width="30" height="30" fill="#cbd5e1"/><text x="125" y="65">D</text>
+                </g>
+            </svg>`,
+            opsi: ["A berhadapan dengan C", "A berhadapan dengan B", "B berhadapan dengan C", "C berhadapan dengan D", "Semua sisi menempel"], jawabanBenar: 0,
+            pembahasan: "Pada jaring kubus lurus sebaris, sisi yang saling berhadapan selalu selang-seling 1 kotak. Jadi Sisi A berhadapan dengan Sisi C, dan Sisi B berhadapan dengan Sisi D."
+        },
+        {
+            id: "S-022", kategori: "Sudut Pandang Tampak",
+            pertanyaan: "Pengamat melihat bangunan dari DEPAN. Jika bagian kanan bangunan tertutup pohon tinggi, bagian yang masih terlihat jelas oleh pengamat adalah...",
+            visualHtml: `<svg width="220" height="130" viewBox="0 0 220 130">
+                <rect x="30" y="50" width="100" height="50" fill="#0284c7"/>
+                <polygon points="30,50 80,20 130,50" fill="#0b2340"/>
+                <!-- Pohon di Kanan -->
+                <path d="M140,20 Q160,10 170,30 Q190,40 180,70 Q190,100 160,100 Z" fill="#22c55e"/>
+                <rect x="155" y="90" width="10" height="30" fill="#78350f"/>
+            </svg>`,
+            opsi: ["Sisi kiri dan tengah bangunan", "Sisi kanan sepenuhnya", "Seluruh bangunan tanpa sisa", "Hanya atap bagian atas", "Bangunannya hilang"], jawabanBenar: 0,
+            pembahasan: "Karena pohon berada di sebelah kanan, maka area bangunan sebelah kanan akan terhalang. Bagian yang tetap kelihatan dengan jelas adalah sisi sebelah kiri dan area tengah bangunan."
+        },
+        {
+            id: "S-023", kategori: "Denah & Arah Lokasi",
+            pertanyaan: "Lampu Merah 1 berada di sebelah utara Lampu Merah 2. Mobil bergerak dari Lampu Merah 2 lurus ke utara sejauh 500 meter. Posisi mobil sekarang berada di...",
+            visualHtml: `<svg width="180" height="140" viewBox="0 0 180 140">
+                <line x1="90" y1="20" x2="90" y2="120" stroke="#64748b" stroke-width="8"/>
+                <circle cx="90" cy="30" r="6" fill="#dc2626"/><text x="110" y="34" font-size="9" font-weight="bold">Lampu 1</text>
+                <circle cx="90" cy="110" r="6" fill="#dc2626"/><text x="110" y="114" font-size="9" font-weight="bold">Lampu 2</text>
+            </svg>`,
+            opsi: ["Mendekati atau melewati Lampu Merah 1", "Mendekati Lampu Merah 2", "Maju ke arah Barat", "Mundur ke arah Selatan", "Berhenti di tempat"], jawabanBenar: 0,
+            pembahasan: "Karena Lampu Merah 1 berada di sebelah utara Lampu Merah 2, maka saat mobil melaju ke utara dari Lampu 2, jalurnya mengarah tepat menuju Lampu Merah 1."
+        },
+        {
+            id: "S-024", kategori: "Hitung Jumlah Blok 3D",
+            pertanyaan: "Berapa jumlah kubus yang dibutuhkan untuk melengkapi susunan di bawah ini agar menjadi kubus besar berukuran 2x2x2 (total 8 kubus)?",
+            visualHtml: `<svg width="200" height="140" viewBox="0 0 200 140">
+                <g stroke="#1e293b" stroke-width="1.5">
+                    <!-- Ada 3 kubus terpasang -->
+                    <path d="M50,80 L90,60 L130,80 L90,100 Z" fill="#cbd5e1"/>
+                    <path d="M50,80 L90,100 L90,120 L50,100 Z" fill="#94a3b8"/>
+                    <path d="M90,100 L130,80 L130,100 L90,120 Z" fill="#64748b"/>
+
+                    <path d="M90,60 L130,40 L170,60 L130,80 Z" fill="#cbd5e1"/>
+                    <path d="M130,80 L170,60 L170,80 L130,100 Z" fill="#64748b"/>
+
+                    <path d="M50,40 L90,20 L130,40 L90,60 Z" fill="#38bdf8"/>
+                </g>
+            </svg>`,
+            opsi: ["3 kubus", "4 kubus", "5 kubus", "6 kubus", "2 kubus"], jawabanBenar: 2,
+            pembahasan: "Target total kubus lengkap = 8 kubus. Pada gambar sudah ada 3 kubus yang terpasang. Kekurangan kubus yang harus ditambahkan adalah: 8 - 3 = 5 kubus."
+        },
+        {
+            id: "S-025", kategori: "Rotasi & Arah Pandang",
+            pertanyaan: "Seorang pesepeda menghadap SELATAN. Ia belok kiri 90 derajat, lalu putar balik 180 derajat. Arah pesepeda sekarang adalah menghadap ke...",
+            visualHtml: `<svg width="180" height="120" viewBox="0 0 180 120">
+                <circle cx="90" cy="60" r="40" fill="none" stroke="#cbd5e1" stroke-width="2"/>
+                <line x1="90" y1="60" x2="90" y2="100" stroke="#dc2626" stroke-width="3" marker-end="url(#arrow)"/>
+                <text x="90" y="115" font-size="10" font-weight="bold" text-anchor="middle">Selatan</text>
+            </svg>`,
+            opsi: ["Barat", "Timur", "Utara", "Selatan", "Tenggara"], jawabanBenar: 0,
+            pembahasan: "1. Menghadap Selatan -> Belok Kiri 90° = Menghadap Timur.\n2. Dari Timur -> Putar Balik 180° = Menghadap Barat."
+        }
+    ];
+
+    let bankSoal = [];
+    let currentQ = 0;
+    let userAnswers = {};
+    let timerInterval;
+
+    window.addEventListener('DOMContentLoaded', () => {
+        // Auto-shuffle opsi jawaban per soal
+        bankSoal = rawBankSoal.map(q => {
+            let originalOps = [...q.opsi];
+            let correctText = originalOps[q.jawabanBenar];
+            
+            let shuffledOps = [...originalOps];
+            for (let i = shuffledOps.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffledOps[i], shuffledOps[j]] = [shuffledOps[j], shuffledOps[i]];
+            }
+            
+            let newCorrectIdx = shuffledOps.indexOf(correctText);
+            return {
+                ...q,
+                opsi: shuffledOps,
+                jawabanBenar: newCorrectIdx
+            };
+        });
+
+        renderNav();
+        loadQ(0);
+        startTimer(30 * 60);
+    });
+
+    function loadQ(idx) {
+        currentQ = idx;
+        const qData = bankSoal[idx];
+        document.getElementById('q-no').innerText = `Soal ${idx + 1} dari ${bankSoal.length}`;
+        document.getElementById('q-kat').innerText = qData.kategori;
+        document.getElementById('q-text').innerText = qData.pertanyaan;
+        document.getElementById('q-visual').innerHTML = qData.visualHtml;
+        
+        let html = '';
+        qData.opsi.forEach((opt, i) => {
+            const isSelected = userAnswers[idx] === i ? 'selected' : '';
+            html += `<div class="opt ${isSelected}" onclick="selectOpt(${i})">${String.fromCharCode(65+i)}. ${opt}</div>`;
+        });
+        document.getElementById('options').innerHTML = html;
+        document.getElementById('btn-next').innerText = idx === bankSoal.length - 1 ? "Selesai" : "Selanjutnya";
+        renderNav();
+    }
+
+    function selectOpt(optIdx) {
+        userAnswers[currentQ] = optIdx;
+        loadQ(currentQ);
+        // Fitur Auto-Next saat memilih jawaban
+        setTimeout(() => { nextQ(); }, 250);
+    }
+
+    function renderNav() {
+        let html = '';
+        for(let i = 0; i < bankSoal.length; i++) {
+            let cls = 'nav-item';
+            if(userAnswers[i] !== undefined) cls += ' filled';
+            if(i === currentQ) cls += ' active';
+            html += `<div class="${cls}" onclick="loadQ(${i})">${i + 1}</div>`;
+        }
+        document.getElementById('navGrid').innerHTML = html;
+    }
+
+    function nextQ() {
+        if(currentQ === bankSoal.length - 1) {
+            if(confirm("Apakah Anda yakin ingin menyelesaikan Tes Spasial ini?")) finishTest();
+            return;
+        }
+        loadQ(currentQ + 1);
+    }
+
+    function prevQ() {
+        if(currentQ > 0) loadQ(currentQ - 1);
+    }
+
+    function startTimer(seconds) {
+        let t = seconds;
+        timerInterval = setInterval(() => {
+            let m = Math.floor(t / 60);
+            let s = t % 60;
+            document.getElementById('timer').innerText = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+            if(--t < 0) {
+                clearInterval(timerInterval);
+                finishTest();
+            }
+        }, 1000);
+    }
+
+    function finishTest() {
+        clearInterval(timerInterval);
+        document.getElementById('page-test').style.display = 'none';
+        document.getElementById('page-result').style.display = 'block';
+
+        let benar = 0;
+        let salah = 0;
+        let kosong = 0;
+        let katStats = {};
+
+        bankSoal.forEach((q, i) => {
+            if (!katStats[q.kategori]) {
+                katStats[q.kategori] = { total: 0, benar: 0 };
+            }
+            katStats[q.kategori].total++;
+
+            if (userAnswers[i] === undefined) {
+                kosong++;
+            } else if (userAnswers[i] === q.jawabanBenar) {
+                benar++;
+                katStats[q.kategori].benar++;
+            } else {
+                salah++;
+            }
+        });
+
+        const totalSoal = bankSoal.length;
+        const skor = (benar / totalSoal) * 100;
+        const persentase = skor;
+
+        document.getElementById('res-skor').innerText = `${skor.toFixed(0)} / 100`;
+        document.getElementById('res-persen').innerText = `${persentase.toFixed(0)}%`;
+        document.getElementById('res-detail').innerText = `${benar} Benar / ${salah} Salah / ${kosong} Kosong`;
+
+        let katHtml = '';
+        for (let kat in katStats) {
+            let p = (katStats[kat].benar / katStats[kat].total) * 100;
+            katHtml += `
+                <tr>
+                    <td><b>${kat}</b></td>
+                    <td>${katStats[kat].total}</td>
+                    <td>${katStats[kat].benar}</td>
+                    <td><b>${p.toFixed(0)}%</b></td>
+                </tr>
+            `;
+        }
+        document.querySelector('#table-kategori tbody').innerHTML = katHtml;
+
+        let saranText = '';
+        if (persentase >= 80) {
+            saranText = "<b>HASIL SANGAT BAGUS!</b> Kemampuan bayangan spasial, pemahaman denah, dan penalaran bentuk 3D Anda sudah sangat terasah dengan baik.";
+        } else if (persentase >= 60) {
+            saranText = "<b>CUKUP BAGUS.</b> Pemahaman denah dan gambar Anda sudah baik. Cobalah untuk lebih teliti saat menghitung tumpukan kotak tersembunyi dan lipatan pola.";
+        } else {
+            saranText = "<b>PERLU BANYAK LATIHAN.</b> Jangan berkecil hati. Pelajari kembali bagian gambar dan pembahasan di bawah ini secara perlahan, lalu ulangi tes.";
+        }
+        document.getElementById('saran-box').innerHTML = saranText;
+
+        let pemHtml = '';
+        bankSoal.forEach((q, i) => {
+            let uAns = userAnswers[i];
+            let statusBadge = '';
+            let uAnsText = uAns !== undefined ? `${String.fromCharCode(65+uAns)}. ${q.opsi[uAns]}` : '<i>Tidak Dijawab</i>';
+            let cAnsText = `${String.fromCharCode(65+q.jawabanBenar)}. ${q.opsi[q.jawabanBenar]}`;
+
+            if (uAns === undefined) {
+                statusBadge = '<span class="badge-kosong">KOSONG</span>';
+            } else if (uAns === q.jawabanBenar) {
+                statusBadge = '<span class="badge-benar">BENAR</span>';
+            } else {
+                statusBadge = '<span class="badge-salah">SALAH</span>';
+            }
+
+            pemHtml += `
+                <div style="margin-bottom:20px; border-bottom:1px solid #e2e8f0; padding-bottom:15px;">
+                    <div style="font-weight:bold; color:var(--navy);">Soal ${i + 1} (${q.kategori}) - Status: ${statusBadge}</div>
+                    <div style="margin:8px 0; font-size:14.5px;">${q.pertanyaan}</div>
+                    <div class="visual-container" style="max-width:250px; margin:10px 0;">${q.visualHtml}</div>
+                    <div style="font-size:13.5px; color:#475569;">
+                        <div>Jawaban Anda: ${uAnsText}</div>
+                        <div>Jawaban Benar: <b>${cAnsText}</b></div>
+                    </div>
+                    <div class="pembahasan-box">
+                        <b>Penjelasan Sederhana:</b> ${q.pembahasan}
+                    </div>
+                </div>
+            `;
+        });
+        document.getElementById('pembahasan-container').innerHTML = pemHtml;
+        window.scrollTo(0,0);
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PERSONA RESEARCH & CONSULTING - Psikotes Polri HOTS (Spasial, Denah, Map & Kompas)</title>
+    <style>
+        :root { --navy: #0b2340; --gold: #d4a017; --bg: #f8fafc; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: var(--bg); color: #1e293b; -webkit-user-select: none; user-select: none; }
+        header { background: var(--navy); color: white; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid var(--gold); }
+        .container { max-width: 1000px; margin: 20px auto; padding: 0 15px; }
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .opt { padding: 14px; margin: 8px 0; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+        .opt:hover { background: #f1f5f9; border-color: var(--navy); }
+        .opt.selected { background: #e0f2fe; border-color: var(--navy); font-weight: bold; }
+        .nav-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 5px; margin-top: 15px; }
+        .nav-item { height: 32px; display: flex; align-items: center; justify-content: center; border: 1px solid #cbd5e1; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold; }
+        .nav-item.filled { background: var(--navy); color: white; }
+        .nav-item.active { border: 2px solid var(--gold); }
+        .btn { background: var(--navy); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .btn:hover { opacity: 0.9; }
+        .btn-gold { background: var(--gold); color: var(--navy); }
+        #timer { font-size: 20px; font-weight: bold; color: var(--gold); font-family: monospace; }
+        
+        .visual-container { width: 100%; text-align: center; margin: 15px 0; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px; box-sizing: border-box; }
+        .visual-container svg { max-width: 100%; height: auto; max-height: 280px; }
+
+        .rekap-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13.5px; }
+        .rekap-table th, .rekap-table td { border: 1px solid #cbd5e1; padding: 8px 12px; text-align: left; }
+        .rekap-table th { background-color: var(--navy); color: white; }
+        .badge-benar { color: #16a34a; font-weight: bold; }
+        .badge-salah { color: #dc2626; font-weight: bold; }
+        .badge-kosong { color: #d97706; font-weight: bold; }
+        .pembahasan-box { background: #f1f5f9; border-left: 4px solid var(--navy); padding: 12px; margin-top: 10px; font-size: 13.5px; border-radius: 0 6px 6px 0; line-height: 1.5; }
+        
+        @media print {
+            header, .no-print, button { display: none !important; }
+            body { background: white; color: black; -webkit-user-select: auto; user-select: auto; }
+            .container { max-width: 100%; margin: 0; padding: 0; }
+            .card { box-shadow: none; border: 1px solid #ccc; }
+        }
+    </style>
+</head>
+<body oncontextmenu="return false" onkeydown="return false">
+
+<div class="container">
+    <header>
+        <div>
+            <b>PERSONA RESEARCH & CONSULTING</b> | SIMULASI PSIKOTES POLRI (HOTS)
+            <div style="font-size: 11px; font-weight: normal; color: #cbd5e1;">50 Soal Kombinasi: Denah Kompleks, Peta Taktis, Blok Gedung, & Navigasi Kompas | WA: 0877 425 5786</div>
+        </div>
+        <div id="timer">60:00</div>
+    </header>
+
+    <!-- Halaman Pengerjaan Soal -->
+    <div id="page-test" style="margin-top:20px;">
+        <div style="display:flex; gap:20px; flex-wrap:wrap;">
+            <div style="flex:3; min-width:300px;">
+                <div class="card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                        <div id="q-no" style="font-weight:bold; color:var(--navy);">Soal 1 dari 50</div>
+                        <div id="q-kat" style="font-size:12px; background:#e0f2fe; color:var(--navy); padding:3px 8px; border-radius:4px; font-weight:600;">Kategori</div>
+                    </div>
+                    <div id="q-text" style="font-size:15px; line-height:1.6; margin-bottom:15px;"></div>
+                    <div id="q-visual" class="visual-container"></div>
+                    <div id="options"></div>
+                    <div style="margin-top:25px; display:flex; justify-content:space-between;">
+                        <button class="btn" onclick="prevQ()" style="background:#64748b">Sebelumnya</button>
+                        <button class="btn" id="btn-next" onclick="nextQ()">Selanjutnya</button>
+                    </div>
+                </div>
+            </div>
+
+            <div style="flex:1; min-width:220px;">
+                <div class="card" style="padding:15px;">
+                    <div style="text-align:center; font-size:12px; font-weight:bold; margin-bottom:10px; color:var(--navy);">NAVIGASI SOAL</div>
+                    <div id="navGrid" class="nav-grid"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Halaman Hasil & Pembahasan -->
+    <div id="page-result" style="display:none; margin-top:20px;">
+        <div class="card">
+            <h2 style="color:var(--navy); border-bottom:2px solid var(--gold); padding-bottom:10px; margin-top:0;">HASIL EVALUASI PSIKOTES POLRI (KECERDASAN SPASIAL & TAKTIS)</h2>
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:15px; margin:20px 0;">
+                <div style="background:#f1f5f9; padding:12px; border-radius:8px; text-align:center;">
+                    <div style="font-size:12px; color:#64748b;">SKOR AKHIR</div>
+                    <div id="res-skor" style="font-size:22px; font-weight:bold; color:var(--navy);">-</div>
+                </div>
+                <div style="background:#f1f5f9; padding:12px; border-radius:8px; text-align:center;">
+                    <div style="font-size:12px; color:#64748b;">PERSENTASE</div>
+                    <div id="res-persen" style="font-size:22px; font-weight:bold; color:var(--navy);">-</div>
+                </div>
+                <div style="background:#f1f5f9; padding:12px; border-radius:8px; text-align:center;">
+                    <div style="font-size:12px; color:#64748b;">BENAR / SALAH / KOSONG</div>
+                    <div id="res-detail" style="font-size:16px; font-weight:bold; color:var(--navy);">-</div>
+                </div>
+            </div>
+
+            <button class="btn btn-gold no-print" onclick="window.print()" style="width:100%; margin-bottom:20px; font-size:15px;">CETAK / SIMPAN HASIL LAPORAN (PDF)</button>
+
+            <h3 style="color:var(--navy); margin-top:25px;">ANALISIS SUB-KATEGORI SOAL</h3>
+            <table class="rekap-table" id="table-kategori">
+                <thead>
+                    <tr>
+                        <th>Sub-Materi Psikotes</th>
+                        <th>Jumlah Soal</th>
+                        <th>Jawaban Benar</th>
+                        <th>Penguasaan (%)</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+
+            <h3 style="color:var(--navy); margin-top:25px;">REKOMENDASI KELULUSAN PSIKOTES POLRI</h3>
+            <div id="saran-box" class="pembahasan-box" style="border-left-color:var(--gold);"></div>
+
+            <h3 style="color:var(--navy); margin-top:25px;">PEMBAHASAN SOAL & ANALISIS DIAGRAM</h3>
+            <div id="pembahasan-container"></div>
+
+            <div style="margin-top:20px;" class="no-print">
+                <button class="btn" onclick="location.reload()" style="width:100%; padding:12px;">ULANGI SIMULASI TES</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const EXPIRATION_DATE = new Date('2026-12-31T23:59:59').getTime();
+
+    // 1. Generator Visual SVG Kompas Taktis
+    function generateCompassSVG(angle, label1="U", label2="T", label3="S", label4="B", extraLineAngle=null) {
+        const radMain = (angle - 90) * (Math.PI / 180);
+        const radOpp = (angle + 90) * (Math.PI / 180);
+        
+        const xRed = 100 + 60 * Math.cos(radMain);
+        const yRed = 100 + 60 * Math.sin(radMain);
+        
+        const xBlack = 100 + 60 * Math.cos(radOpp);
+        const yBlack = 100 + 60 * Math.sin(radOpp);
+
+        const radPerp1 = angle * (Math.PI / 180);
+        const radPerp2 = (angle + 180) * (Math.PI / 180);
+        const xWing1 = 100 + 8 * Math.cos(radPerp1);
+        const yWing1 = 100 + 8 * Math.sin(radPerp1);
+        const xWing2 = 100 + 8 * Math.cos(radPerp2);
+        const yWing2 = 100 + 8 * Math.sin(radPerp2);
+
+        let ticksHtml = '';
+        for (let i = 0; i < 360; i += 30) {
+            const rTick = (i - 90) * (Math.PI / 180);
+            const x1 = 100 + 72 * Math.cos(rTick);
+            const y1 = 100 + 72 * Math.sin(rTick);
+            const x2 = 100 + 78 * Math.cos(rTick);
+            const y2 = 100 + 78 * Math.sin(rTick);
+            ticksHtml += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#64748b" stroke-width="1.5"/>`;
+        }
+
+        let extraLineHtml = '';
+        if (extraLineAngle !== null) {
+            const radEx = (extraLineAngle - 90) * (Math.PI / 180);
+            const xEx = 100 + 65 * Math.cos(radEx);
+            const yEx = 100 + 65 * Math.sin(radEx);
+            extraLineHtml = `
+                <line x1="100" y1="100" x2="${xEx}" y2="${yEx}" stroke="#16a34a" stroke-width="3" stroke-dasharray="4"/>
+                <circle cx="${xEx}" cy="${yEx}" r="4" fill="#16a34a"/>
+            `;
+        }
+
+        return `<svg width="220" height="220" viewBox="0 0 200 200">
+            <defs>
+                <radialGradient id="ringGrad" cx="50%" cy="50%" r="50%">
+                    <stop offset="70%" stop-color="#0f172a"/>
+                    <stop offset="90%" stop-color="#334155"/>
+                    <stop offset="100%" stop-color="#020617"/>
+                </radialGradient>
+                <radialGradient id="dialGrad" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stop-color="#ffffff"/>
+                    <stop offset="85%" stop-color="#f1f5f9"/>
+                    <stop offset="100%" stop-color="#e2e8f0"/>
+                </radialGradient>
+            </defs>
+            <circle cx="100" cy="100" r="96" fill="url(#ringGrad)" stroke="#cbd5e1" stroke-width="2"/>
+            <circle cx="100" cy="100" r="84" fill="#1e293b"/>
+            <circle cx="100" cy="100" r="78" fill="url(#dialGrad)"/>
+            ${ticksHtml}
+            <polygon points="100,28 104,96 100,100 96,96" fill="#cbd5e1"/>
+            <polygon points="100,172 104,104 100,100 96,104" fill="#cbd5e1"/>
+            <polygon points="172,100 104,104 100,100 104,96" fill="#cbd5e1"/>
+            <polygon points="28,100 96,104 100,100 96,96" fill="#cbd5e1"/>
+            <text x="100" y="38" font-size="12" font-weight="900" fill="#dc2626" text-anchor="middle">${label1}</text>
+            <text x="166" y="104" font-size="11" font-weight="bold" fill="#0f172a" text-anchor="middle">${label2}</text>
+            <text x="100" y="168" font-size="11" font-weight="bold" fill="#0f172a" text-anchor="middle">${label3}</text>
+            <text x="34" y="104" font-size="11" font-weight="bold" fill="#0f172a" text-anchor="middle">${label4}</text>
+            ${extraLineHtml}
+            <polygon points="${xRed},${yRed} ${xWing1},${yWing1} 100,100" fill="#ef4444"/>
+            <polygon points="${xRed},${yRed} ${xWing2},${yWing2} 100,100" fill="#b91c1c"/>
+            <polygon points="${xBlack},${yBlack} ${xWing1},${yWing1} 100,100" fill="#475569"/>
+            <polygon points="${xBlack},${yBlack} ${xWing2},${yWing2} 100,100" fill="#0f172a"/>
+            <circle cx="100" cy="100" r="7" fill="#d4a017" stroke="#0f172a" stroke-width="1.5"/>
+            <circle cx="100" cy="100" r="3" fill="#ffffff"/>
+        </svg>`;
+    }
+
+    // 2. Generator Visual SVG Denah Gedung & Blok Kompleks
+    function generateBlockMapSVG(activeHighlight = "A") {
+        return `<svg width="280" height="200" viewBox="0 0 280 200">
+            <rect width="280" height="200" fill="#f8fafc" rx="8" stroke="#cbd5e1"/>
+            <!-- Jalan Utama -->
+            <rect x="0" y="85" width="280" height="30" fill="#94a3b8"/>
+            <line x1="0" y1="100" x2="280" y2="100" stroke="#ffffff" stroke-dasharray="8" stroke-width="2"/>
+            <rect x="125" y="0" width="30" height="200" fill="#94a3b8"/>
+            <line x1="140" y1="0" x2="140" y2="200" stroke="#ffffff" stroke-dasharray="8" stroke-width="2"/>
+
+            <!-- Blok Gedung A (Utara-Barat) -->
+            <rect x="25" y="15" width="80" height="55" fill="${activeHighlight==='A'?'#d4a017':'#0b2340'}" rx="4"/>
+            <text x="65" y="48" fill="#ffffff" font-size="12" font-weight="bold" text-anchor="middle">GEDUNG A</text>
+
+            <!-- Blok Gedung B (Utara-Timur) -->
+            <rect x="175" y="15" width="80" height="55" fill="${activeHighlight==='B'?'#d4a017':'#0b2340'}" rx="4"/>
+            <text x="215" y="48" fill="#ffffff" font-size="12" font-weight="bold" text-anchor="middle">GEDUNG B</text>
+
+            <!-- Blok Gedung C (Selatan-Barat) -->
+            <rect x="25" y="130" width="80" height="55" fill="${activeHighlight==='C'?'#d4a017':'#0b2340'}" rx="4"/>
+            <text x="65" y="163" fill="#ffffff" font-size="12" font-weight="bold" text-anchor="middle">GEDUNG C</text>
+
+            <!-- Blok Gedung D (Selatan-Timur) -->
+            <rect x="175" y="130" width="80" height="55" fill="${activeHighlight==='D'?'#d4a017':'#0b2340'}" rx="4"/>
+            <text x="215" y="163" fill="#ffffff" font-size="12" font-weight="bold" text-anchor="middle">GEDUNG D</text>
+
+            <!-- Kompas Penunjuk Arah Peta -->
+            <g transform="translate(250, 30)">
+                <circle cx="0" cy="0" r="14" fill="#ffffff" stroke="#0b2340" stroke-width="1.5"/>
+                <line x1="0" y1="10" x2="0" y2="-10" stroke="#ef4444" stroke-width="2"/>
+                <polygon points="0,-12 -4,-4 4,-4" fill="#ef4444"/>
+                <text x="0" y="-15" font-size="9" font-weight="bold" fill="#dc2626" text-anchor="middle">U</text>
+            </g>
+        </svg>`;
+    }
+
+    // 3. Generator Visual SVG Peta Grid Taktis
+    function generateGridMapSVG(startX=1, startY=1, endX=3, endY=3) {
+        let gridHtml = '';
+        for(let i=0; i<4; i++) {
+            for(let j=0; j<4; j++) {
+                let fill = "#f1f5f9";
+                if(i===startX && j===startY) fill = "#ef4444";
+                if(i===endX && j===endY) fill = "#16a34a";
+                gridHtml += `<rect x="${20 + i*55}" y="${20 + j*40}" width="50" height="35" fill="${fill}" stroke="#94a3b8" rx="3"/>`;
+                gridHtml += `<text x="${45 + i*55}" y="${42 + j*40}" font-size="10" font-weight="bold" fill="#1e293b" text-anchor="middle">B-${i+1}${j+1}</text>`;
+            }
+        }
+        return `<svg width="260" height="190" viewBox="0 0 260 190">
+            <rect width="260" height="190" fill="#ffffff" rx="6" stroke="#cbd5e1"/>
+            ${gridHtml}
+            <!-- Penunjuk Arah -->
+            <text x="130" y="12" font-size="10" font-weight="bold" fill="#dc2626" text-anchor="middle">▲ UTARA</text>
+        </svg>`;
+    }
+
+    // Bank 50 Soal Psikotes Polri HOTS
+    const rawBankSoal = [];
+
+    // Kumpulan Kategori
+    const katKompas = "Navigasi & Azimuth Kompas";
+    const katDenah = "Denah Gedung & Blok Kompleks";
+    const katPeta = "Peta Grid & Rute Taktis";
+    const katJam = "Korelasi Kompas & Jam Analog";
+
+    // Generate 50 Soal Bervariasi
+    for(let i=1; i<=50; i++) {
+        let qObj = {};
+        let mod = i % 5;
+
+        if(mod === 1) {
+            // Tipe 1: Azimuth Kompas Standar & Back-Azimuth
+            let az = (i * 25) % 360;
+            let backAz = az >= 180 ? az - 180 : az + 180;
+            qObj = {
+                id: `POL-${i}`, kategori: katKompas,
+                pertanyaan: `[Soal ${i}] Seorang petugas membidik target penyerangan pada sudut azimuth ${az}°. Jika petugas harus melakukan pergerakan taktis balik 180° menuju titik asal, berapa nilai back-azimuth kompas yang harus dipasang?`,
+                visualHtml: generateCompassSVG(az, "U", "T", "S", "B", backAz),
+                opsi: [`${backAz}°`, `${(backAz+30)%360}°`, `${(backAz+90)%360}°`, `${(backAz+180)%360}°`, `${(backAz+45)%360}°`],
+                jawabanBenar: 0,
+                pembahasan: `Rumus Back-Azimuth:\n- Azimuth awal = ${az}°.\n- Jika Azimuth ≥ 180°, Back-Azimuth = Azimuth - 180°.\n- Jika Azimuth < 180°, Back-Azimuth = Azimuth + 180°.\n- Nilai Back-Azimuth tepat = ${backAz}°.`
+            };
+        } else if(mod === 2) {
+            // Tipe 2: Denah Gedung & Blok Kompleks
+            let targetBlok = (i % 2 === 0) ? "B" : "D";
+            let asalBlok = (i % 2 === 0) ? "C" : "A";
+            let arahBenar = (targetBlok === "B") ? "Timur Laut" : "Tenggara";
+            qObj = {
+                id: `POL-${i}`, kategori: katDenah,
+                pertanyaan: `[Soal ${i}] Berdasarkan denah tata letak markas komando di bawah, tim SWAT bergerak dari GEDUNG ${asalBlok} menuju GEDUNG ${targetBlok} untuk melakukan evakuasi. Ke arah mata angin manakah pergerakan tersebut?`,
+                visualHtml: generateBlockMapSVG(targetBlok),
+                opsi: ["Utara", "Timur Laut", "Tenggara", "Barat Daya", "Barat Laut"],
+                jawabanBenar: (arahBenar === "Timur Laut") ? 1 : 2,
+                pembahasan: `Analisis Denah Blok Gedung:\n- Posisi Gedung ${asalBlok} berada di sisi kiri.\n- Posisi Gedung ${targetBlok} berada di sisi kanan atas/bawah.\n- Vektor pergerakan dari Gedung ${asalBlok} ke Gedung ${targetBlok} mengarah ke ${arahBenar.toUpperCase()}.`
+            };
+        } else if(mod === 3) {
+            // Tipe 3: Peta Grid & Rute Taktis
+            let x1 = (i % 3), y1 = (i % 2);
+            let x2 = x1 + 1, y2 = y1 + 2;
+            qObj = {
+                id: `POL-${i}`, kategori: katPeta,
+                pertanyaan: `[Soal ${i}] Pada peta koordinat grid taktis berikut, Pos Merah berada pada blok B-${x1+1}${y1+1} dan Pos Hijau berada pada B-${x2+1}${y2+1}. Jika Utara menghadap ke atas, maka Pos Hijau berada di arah mana dari Pos Merah?`,
+                visualHtml: generateGridMapSVG(x1, y1, x2, y2),
+                opsi: ["Timur Laut", "Tenggara", "Barat Daya", "Barat Laut", "Selatan"],
+                jawabanBenar: 1,
+                pembahasan: `Analisis Grid Peta Taktis:\n- Pos Hijau terletak lebih ke kanan (Timur) dan lebih ke bawah (Selatan) dibanding Pos Merah.\n- Gabungan arah kanan dan bawah adalah TENGGARA.`
+            };
+        } else if(mod === 4) {
+            // Tipe 4: Korelasi Kompas & Jam Analog
+            let jam = (i % 12) + 1;
+            let deg = (jam * 30) % 360;
+            qObj = {
+                id: `POL-${i}`, kategori: katJam,
+                pertanyaan: `[Soal ${i}] Sebuah dial jam dinding ditempatkan sejajar dengan permukaan kompas. Jika angka 12 pada jam dipasang berimpit tepat dengan arah Utara (0°), maka angka jam ${jam} akan berada pada sudut azimuth kompas berapa?`,
+                visualHtml: generateCompassSVG(deg, "12", "3", "6", "9"),
+                opsi: [`${deg}°`, `${(deg+45)%360}°`, `${(deg+90)%360}°`, `${(deg+180)%360}°`, `${(deg+15)%360}°`],
+                jawabanBenar: 0,
+                pembahasan: `Kalkulasi Jam ke Azimuth Kompas:\n- Lingkaran kompas = 360° dibagi 12 angka jam.\n- Tiap 1 jam mewakili sudut 30°.\n- Angka jam ${jam} = ${jam} x 30° = ${deg}°.`
+            };
+        } else {
+            // Tipe 5: Rotasi Haluan & Deklinasi Magnetik
+            let initDeg = (i * 40) % 360;
+            let rot = 90;
+            let finalDeg = (initDeg + rot) % 360;
+            qObj = {
+                id: `POL-${i}`, kategori: katKompas,
+                pertanyaan: `[Soal ${i}] Sebuah helikopter patroli terbang dengan haluan kompas ${initDeg}°. Pilot mendapat instruksi berbelok 90° searah jarum jam (CW) untuk menghindari badai. Berapa sudut haluan azimuth kompas helikopter yang baru?`,
+                visualHtml: generateCompassSVG(finalDeg),
+                opsi: [`${finalDeg}°`, `${(finalDeg+45)%360}°`, `${(finalDeg+90)%360}°`, `${(finalDeg+180)%360}°`, `${(finalDeg+30)%360}°`],
+                jawabanBenar: 0,
+                pembahasan: `Perhitungan Rotasi Haluan Kompas:\n- Haluan awal = ${initDeg}°.\n- Rotasi searah jarum jam (CW) = Ditambah 90°.\n- Haluan baru = ${initDeg}° + 90° = ${finalDeg}°.`
+            };
+        }
+        rawBankSoal.push(qObj);
+    }
+
+    let bankSoal = [];
+    let currentQ = 0;
+    let userAnswers = {};
+    let timerInterval;
+
+    window.addEventListener('DOMContentLoaded', () => {
+        if (new Date().getTime() > EXPIRATION_DATE) {
+            alert("Masa berlaku modul tes ini telah berakhir. Silakan hubungi Persona Research & Consulting.");
+            document.body.innerHTML = "<h2 style='text-align:center; margin-top:50px; color:red;'>MODUL TERKUNCI / EXPIRED</h2>";
+            return;
+        }
+
+        // Auto-shuffle pilihan jawaban
+        bankSoal = rawBankSoal.map(q => {
+            let originalOps = [...q.opsi];
+            let correctText = originalOps[q.jawabanBenar];
+            
+            let shuffledOps = [...originalOps];
+            for (let i = shuffledOps.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffledOps[i], shuffledOps[j]] = [shuffledOps[j], shuffledOps[i]];
+            }
+            
+            let newCorrectIdx = shuffledOps.indexOf(correctText);
+            return {
+                ...q,
+                opsi: shuffledOps,
+                jawabanBenar: newCorrectIdx
+            };
+        });
+
+        renderNav();
+        loadQ(0);
+        startTimer(60 * 60);
+    });
+
+    function loadQ(idx) {
+        currentQ = idx;
+        const qData = bankSoal[idx];
+        document.getElementById('q-no').innerText = `Soal ${idx + 1} dari ${bankSoal.length}`;
+        document.getElementById('q-kat').innerText = qData.kategori;
+        document.getElementById('q-text').innerText = qData.pertanyaan;
+        document.getElementById('q-visual').innerHTML = qData.visualHtml;
+        
+        let html = '';
+        qData.opsi.forEach((opt, i) => {
+            const isSelected = userAnswers[idx] === i ? 'selected' : '';
+            html += `<div class="opt ${isSelected}" onclick="selectOpt(${i})">${String.fromCharCode(65+i)}. ${opt}</div>`;
+        });
+        document.getElementById('options').innerHTML = html;
+        document.getElementById('btn-next').innerText = idx === bankSoal.length - 1 ? "Selesai" : "Selanjutnya";
+        renderNav();
+    }
+
+    // FITUR AUTO-NEXT setelah memilih opsi
+    function selectOpt(optIdx) {
+        userAnswers[currentQ] = optIdx;
+        loadQ(currentQ);
+        setTimeout(() => { 
+            nextQ(); 
+        }, 250);
+    }
+
+    function renderNav() {
+        let html = '';
+        for(let i = 0; i < bankSoal.length; i++) {
+            let cls = 'nav-item';
+            if(userAnswers[i] !== undefined) cls += ' filled';
+            if(i === currentQ) cls += ' active';
+            html += `<div class="${cls}" onclick="loadQ(${i})">${i + 1}</div>`;
+        }
+        document.getElementById('navGrid').innerHTML = html;
+    }
+
+    function nextQ() {
+        if(currentQ === bankSoal.length - 1) {
+            if(confirm("Apakah Anda telah selesai mengerjakan seluruh 50 soal?")) finishTest();
+            return;
+        }
+        loadQ(currentQ + 1);
+    }
+
+    function prevQ() {
+        if(currentQ > 0) loadQ(currentQ - 1);
+    }
+
+    function startTimer(seconds) {
+        let t = seconds;
+        timerInterval = setInterval(() => {
+            let m = Math.floor(t / 60);
+            let s = t % 60;
+            document.getElementById('timer').innerText = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+            if(--t < 0) {
+                clearInterval(timerInterval);
+                finishTest();
+            }
+        }, 1000);
+    }
+
+    function finishTest() {
+        clearInterval(timerInterval);
+        document.getElementById('page-test').style.display = 'none';
+        document.getElementById('page-result').style.display = 'block';
+
+        let benar = 0;
+        let salah = 0;
+        let kosong = 0;
+        let katStats = {};
+
+        bankSoal.forEach((q, i) => {
+            if (!katStats[q.kategori]) {
+                katStats[q.kategori] = { total: 0, benar: 0 };
+            }
+            katStats[q.kategori].total++;
+
+            if (userAnswers[i] === undefined) {
+                kosong++;
+            } else if (userAnswers[i] === q.jawabanBenar) {
+                benar++;
+                katStats[q.kategori].benar++;
+            } else {
+                salah++;
+            }
+        });
+
+        const totalSoal = bankSoal.length;
+        const skor = (benar / totalSoal) * 100;
+        const persentase = skor;
+
+        document.getElementById('res-skor').innerText = `${skor.toFixed(0)} / 100`;
+        document.getElementById('res-persen').innerText = `${persentase.toFixed(0)}%`;
+        document.getElementById('res-detail').innerText = `${benar} Benar / ${salah} Salah / ${kosong} Kosong`;
+
+        let katHtml = '';
+        for (let kat in katStats) {
+            let p = (katStats[kat].benar / katStats[kat].total) * 100;
+            katHtml += `
+                <tr>
+                    <td><b>${kat}</b></td>
+                    <td>${katStats[kat].total}</td>
+                    <td>${katStats[kat].benar}</td>
+                    <td><b>${p.toFixed(0)}%</b></td>
+                </tr>
+            `;
+        }
+        document.querySelector('#table-kategori tbody').innerHTML = katHtml;
+
+        let saranText = '';
+        if (persentase >= 80) {
+            saranText = "<b>SANGAT MEMENUHI SYARAT (MS) HIGH SCORE!</b> Kemampuan penalaran spasial, orientasi peta, dan azimuth kompas Anda tergolong istimewa. Siap menghadapi ujian Psikotes Polri.";
+        } else if (persentase >= 61) {
+            saranText = "<b>MEMENUHI SYARAT (MS).</b> Hasil Anda sudah berada di atas ambang batas. Disarankan untuk melatih kembali ketelitian pada pembacaan denah dan back-azimuth.";
+        } else {
+            saranText = "<b>TIDAK MEMENUHI SYARAT (TMS) / EVALUASI KETAT.</b> Nilai Anda masih di bawah standar kecerdasan Polri. Silakan cermati seluruh pembahasan 50 soal di bawah.";
+        }
+        document.getElementById('saran-box').innerHTML = saranText;
+
+        let pemHtml = '';
+        bankSoal.forEach((q, i) => {
+            let uAns = userAnswers[i];
+            let statusBadge = '';
+            let uAnsText = uAns !== undefined ? `${String.fromCharCode(65+uAns)}. ${q.opsi[uAns]}` : '<i>Tidak Dijawab</i>';
+            let cAnsText = `${String.fromCharCode(65+q.jawabanBenar)}. ${q.opsi[q.jawabanBenar]}`;
+
+            if (uAns === undefined) {
+                statusBadge = '<span class="badge-kosong">KOSONG</span>';
+            } else if (uAns === q.jawabanBenar) {
+                statusBadge = '<span class="badge-benar">BENAR</span>';
+            } else {
+                statusBadge = '<span class="badge-salah">SALAH</span>';
+            }
+
+            pemHtml += `
+                <div style="margin-bottom:20px; border-bottom:1px solid #e2e8f0; padding-bottom:15px;">
+                    <div style="font-weight:bold; color:var(--navy);">Soal ${i + 1} (${q.kategori}) - Status: ${statusBadge}</div>
+                    <div style="margin:8px 0; font-size:14.5px;">${q.pertanyaan}</div>
+                    <div class="visual-container" style="max-width:280px; margin:10px 0;">${q.visualHtml}</div>
+                    <div style="font-size:13.5px; color:#475569;">
+                        <div>Jawaban Anda: ${uAnsText}</div>
+                        <div>Jawaban Benar: <b>${cAnsText}</b></div>
+                    </div>
+                    <div class="pembahasan-box">
+                        <b>Analisis Pembahasan:</b><br>${q.pembahasan.replace(/\n/g, '<br>')}
+                    </div>
+                </div>
+            `;
+        });
+        document.getElementById('pembahasan-container').innerHTML = pemHtml;
+        window.scrollTo(0,0);
+    }
+</script>
+</body>
+</html>

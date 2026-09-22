@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PERSONA RESEARCH & CONSULTING - Tes Spasial, Rute Blok & Gedung (HOTS)</title>
+    <style>
+        :root { --navy: #0b2340; --gold: #d4a017; --bg: #f8fafc; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: var(--bg); color: #1e293b; -webkit-user-select: none; user-select: none; }
+        header { background: var(--navy); color: white; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid var(--gold); }
+        .container { max-width: 980px; margin: 20px auto; padding: 0 15px; }
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .opt { padding: 14px; margin: 8px 0; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+        .opt:hover { background: #f1f5f9; border-color: var(--navy); }
+        .opt.selected { background: #e0f2fe; border-color: var(--navy); font-weight: bold; }
+        .nav-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 6px; margin-top: 15px; }
+        .nav-item { height: 35px; display: flex; align-items: center; justify-content: center; border: 1px solid #cbd5e1; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; }
+        .nav-item.filled { background: var(--navy); color: white; }
+        .nav-item.active { border: 2px solid var(--gold); }
+        .btn { background: var(--navy); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .btn:hover { opacity: 0.9; }
+        .btn-gold { background: var(--gold); color: var(--navy); }
+        #timer { font-size: 20px; font-weight: bold; color: var(--gold); font-family: monospace; }
+        
+        .visual-container { width: 100%; text-align: center; margin: 15px 0; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px; box-sizing: border-box; }
+        .visual-container svg { max-width: 100%; height: auto; max-height: 280px; }
+
+        .rekap-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
+        .rekap-table th, .rekap-table td { border: 1px solid #cbd5e1; padding: 8px 12px; text-align: left; }
+        .rekap-table th { background-color: var(--navy); color: white; }
+        .badge-benar { color: #16a34a; font-weight: bold; }
+        .badge-salah { color: #dc2626; font-weight: bold; }
+        .badge-kosong { color: #d97706; font-weight: bold; }
+        .pembahasan-box { background: #f1f5f9; border-left: 4px solid var(--navy); padding: 12px; margin-top: 10px; font-size: 13.5px; border-radius: 0 6px 6px 0; line-height: 1.5; }
+        
+        @media print {
+            header, .no-print, button { display: none !important; }
+            body { background: white; color: black; -webkit-user-select: auto; user-select: auto; }
+            .container { max-width: 100%; margin: 0; padding: 0; }
+            .card { box-shadow: none; border: 1px solid #ccc; }
+        }
+    </style>
+</head>
+<body oncontextmenu="return false" onkeydown="return false">
+
+<div class="container">
+    <header>
+        <div>
+            <b>PERSONA RESEARCH & CONSULTING</b> | TES SPASIAL, RUTE BLOK & MAP (HOTS)
+            <div style="font-size: 11px; font-weight: normal; color: #cbd5e1;">Analisis Navigasi Perkotaan, Jarak (KM), Blok Jalan, & Orientasi Gedung | WA: 0877 425 5786</div>
+        </div>
+        <div id="timer">35:00</div>
+    </header>
+
+    <!-- Halaman Pengerjaan Soal -->
+    <div id="page-test" style="margin-top:20px;">
+        <div style="display:flex; gap:20px; flex-wrap:wrap;">
+            <div style="flex:3; min-width:300px;">
+                <div class="card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                        <div id="q-no" style="font-weight:bold; color:var(--navy);">Soal 1 dari 25</div>
+                        <div id="q-kat" style="font-size:12px; background:#e0f2fe; color:var(--navy); padding:3px 8px; border-radius:4px; font-weight:600;">Kategori</div>
+                    </div>
+                    <div id="q-text" style="font-size:15px; line-height:1.6; margin-bottom:15px;"></div>
+                    <div id="q-visual" class="visual-container"></div>
+                    <div id="options"></div>
+                    <div style="margin-top:25px; display:flex; justify-content:space-between;">
+                        <button class="btn" onclick="prevQ()" style="background:#64748b">Sebelumnya</button>
+                        <button class="btn" id="btn-next" onclick="nextQ()">Selanjutnya</button>
+                    </div>
+                </div>
+            </div>
+
+            <div style="flex:1; min-width:220px;">
+                <div class="card" style="padding:15px;">
+                    <div style="text-align:center; font-size:12px; font-weight:bold; margin-bottom:10px; color:var(--navy);">NAVIGASI SOAL</div>
+                    <div id="navGrid" class="nav-grid"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Halaman Hasil & Pembahasan -->
+    <div id="page-result" style="display:none; margin-top:20px;">
+        <div class="card">
+            <h2 style="color:var(--navy); border-bottom:2px solid var(--gold); padding-bottom:10px; margin-top:0;">HASIL EVALUASI NAVIGASI & SPASIAL MAP HOTS</h2>
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:15px; margin:20px 0;">
+                <div style="background:#f1f5f9; padding:12px; border-radius:8px; text-align:center;">
+                    <div style="font-size:12px; color:#64748b;">SKOR AKHIR</div>
+                    <div id="res-skor" style="font-size:22px; font-weight:bold; color:var(--navy);">-</div>
+                </div>
+                <div style="background:#f1f5f9; padding:12px; border-radius:8px; text-align:center;">
+                    <div style="font-size:12px; color:#64748b;">PERSENTASE</div>
+                    <div id="res-persen" style="font-size:22px; font-weight:bold; color:var(--navy);">-</div>
+                </div>
+                <div style="background:#f1f5f9; padding:12px; border-radius:8px; text-align:center;">
+                    <div style="font-size:12px; color:#64748b;">BENAR / SALAH / KOSONG</div>
+                    <div id="res-detail" style="font-size:16px; font-weight:bold; color:var(--navy);">-</div>
+                </div>
+            </div>
+
+            <button class="btn btn-gold no-print" onclick="window.print()" style="width:100%; margin-bottom:20px; font-size:15px;">CETAK / SIMPAN HASIL REKAP (PDF)</button>
+
+            <h3 style="color:var(--navy); margin-top:25px;">ANALISIS DOMAIN NAVIGASI MAP</h3>
+            <table class="rekap-table" id="table-kategori">
+                <thead>
+                    <tr>
+                        <th>Domain / Kategori Spasial Map</th>
+                        <th>Jumlah Soal</th>
+                        <th>Jawaban Benar</th>
+                        <th>Tingkat Penguasaan</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+
+            <h3 style="color:var(--navy); margin-top:25px;">EVALUASI KEMAMPUAN ANALITIS</h3>
+            <div id="saran-box" class="pembahasan-box" style="border-left-color:var(--gold);"></div>
+
+            <h3 style="color:var(--navy); margin-top:25px;">PEMBAHASAN SOAL & VERIFIKASI GEOMETRIS</h3>
+            <div id="pembahasan-container"></div>
+
+            <div style="margin-top:20px;" class="no-print">
+                <button class="btn" onclick="location.reload()" style="width:100%; padding:12px;">ULANGI SIMULASI TES</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Enkripsi Kunci & Tanggal Expiration Protocol (Valid hingga 31-12-2026)
+    const EXPIRATION_DATE = new Date('2026-12-31T23:59:59').getTime();
+
+    const rawBankSoal = [
+        {
+            id: "MAP-01", kategori: "Kalkulasi Jarak & Vektor KM",
+            pertanyaan: "Kurir mengantar paket dari Gedung A menuju Gedung B dengan rute: 6 km ke Timur, 5 km ke Utara, 2 km ke Barat, dan 2 km ke Selatan. Berapa km jarak lurus (perpindahan) terpendek Gedung B dari lokasi awal Gedung A?",
+            visualHtml: `<svg width="260" height="160" viewBox="0 0 260 160">
+                <rect x="10" y="10" width="240" height="140" fill="#f8fafc" stroke="#334155" stroke-width="1.5"/>
+                <path d="M40,120 L160,120 L160,20 L120,20 L120,60" stroke="#0284c7" stroke-width="3" fill="none" stroke-dasharray="4"/>
+                <line x1="40" y1="120" x2="120" y2="60" stroke="#ef4444" stroke-width="2.5"/>
+                <circle cx="40" cy="120" r="6" fill="#16a34a"/><text x="25" y="135" font-size="10" font-weight="bold">Gedung A</text>
+                <circle cx="120" cy="60" r="6" fill="#d97706"/><text x="130" y="65" font-size="10" font-weight="bold">Gedung B</text>
+                <text x="220" y="25" font-size="11" font-weight="bold">U ↑</text>
+            </svg>`,
+            opsi: ["3 km", "4 km", "5 km", "7 km", "15 km"], jawabanBenar: 2,
+            pembahasan: "Perhitungan Vektor Posisi:\n- Sumbu X (Timur-Barat): 6 km (Timur) - 2 km (Barat) = 4 km ke Timur.\n- Sumbu Y (Utara-Selatan): 5 km (Utara) - 2 km (Selatan) = 3 km ke Utara.\n- Jarak Lurus = √(4² + 3²) = √(16 + 9) = √25 = 5 km."
+        },
+        {
+            id: "MAP-02", kategori: "Navigasi Blok Perkotaan",
+            pertanyaan: "Setiap petak dalam kisi denah kota di bawah berukuran 1 blok x 1 blok (1 blok = 0,5 km). Ambulans harus menempuh rute jalan dari Rumah Sakit (RS) ke lokasi Kecelakaan (K). Berapa blok minimum dan total km rute terpendek yang aman melewati jalan-jalan utama?",
+            visualHtml: `<svg width="250" height="160" viewBox="0 0 250 160">
+                <g stroke="#cbd5e1" stroke-width="2">
+                    <line x1="30" y1="30" x2="210" y2="30"/><line x1="30" y1="70" x2="210" y2="70"/>
+                    <line x1="30" y1="110" x2="210" y2="110"/><line x1="30" y1="150" x2="210" y2="150"/>
+                    <line x1="30" y1="30" x2="30" y2="150"/><line x1="90" y1="30" x2="90" y2="150"/>
+                    <line x1="150" y1="30" x2="150" y2="150"/><line x1="210" y1="30" x2="210" y2="150"/>
+                </g>
+                <circle cx="30" cy="150" r="8" fill="#ef4444"/><text x="30" y="153" font-size="9" fill="#fff" text-anchor="middle" font-weight="bold">RS</text>
+                <circle cx="210" cy="30" r="8" fill="#0284c7"/><text x="210" y="33" fill="#fff" font-size="9" text-anchor="middle" font-weight="bold">K</text>
+            </svg>`,
+            opsi: ["4 blok (2 km)", "5 blok (2,5 km)", "6 blok (3 km)", "7 blok (3,5 km)", "8 blok (4 km)"], jawabanBenar: 2,
+            pembahasan: "Hitungan Jarak Manhattan (Grid):\n- Selisih Horizontal = 3 blok ke Timur.\n- Selisih Vertikal = 3 blok ke Utara.\n- Total Blok Terpendek = 3 + 3 = 6 blok.\n- Total KM = 6 blok × 0,5 km = 3 km."
+        },
+        {
+            id: "MAP-03", kategori: "Orientasi Arah Gedung",
+            pertanyaan: "Mobil bergerak ke arah Barat di Jalan Utama, lalu berbelok 90° ke kanan di Perempatan Blok 4, kemudian belok 90° ke kiri di Blok 2. Sekarang mobil berada di depan gedung apa dan menghadap ke mana?",
+            visualHtml: `<svg width="260" height="160" viewBox="0 0 260 160">
+                <rect x="20" y="20" width="220" height="120" fill="#f8fafc" stroke="#334155" stroke-width="2"/>
+                <rect x="30" y="30" width="50" height="40" fill="#e0f2fe" stroke="#0284c7"/><text x="55" y="55" font-size="9" text-anchor="middle" font-weight="bold">Bank A</text>
+                <rect x="180" y="30" width="50" height="40" fill="#fef3c7" stroke="#d97706"/><text x="205" y="55" font-size="9" text-anchor="middle" font-weight="bold">Mall B</text>
+                <rect x="30" y="90" width="50" height="40" fill="#dcfce7" stroke="#16a34a"/><text x="55" y="115" font-size="9" text-anchor="middle" font-weight="bold">Hotel C</text>
+                <path d="M220,130 L100,130 L100,50 L40,50" stroke="#ef4444" stroke-width="3" fill="none" stroke-dasharray="4"/>
+                <text x="235" y="25" font-size="11" font-weight="bold">U ↑</text>
+            </svg>`,
+            opsi: ["Di depan Bank A, menghadap Barat", "Di depan Hotel C, menghadap Selatan", "Di depan Mall B, menghadap Utara", "Di depan Bank A, menghadap Utara", "Di depan Mall B, menghadap Barat"], jawabanBenar: 0,
+            pembahasan: "Analisis Rute & Orientasi Arah:\n1. Awalnya melaju ke BARAT.\n2. Belok 90° ke kanan -> Arah berubah ke UTARA.\n3. Belok 90° ke kiri -> Arah berubah kembali ke BARAT.\n4. Rute berhenti tepat di jalan depan Gedung Bank A, menghadap ke BARAT."
+        },
+        {
+            id: "MAP-04", kategori: "Kalkulasi Jarak & Vektor KM",
+            pertanyaan: "Dua armada truk berangkat dari depo yang sama (Point O). Truk X melaju 12 km ke Selatan. Truk Y melaju 16 km ke Barat. Berapa jarak langsung (garis lurus) antara Truk X dan Truk Y sekarang?",
+            visualHtml: `<svg width="220" height="150" viewBox="0 0 220 150">
+                <path d="M180,30 L180,120 M180,30 L30,30" stroke="#0284c7" stroke-width="2"/>
+                <line x1="30" y1="30" x2="180" y2="120" stroke="#ef4444" stroke-width="2.5" stroke-dasharray="4"/>
+                <circle cx="180" cy="30" r="5" fill="#0f172a"/><text x="190" y="30" font-size="10" font-weight="bold">Point O</text>
+                <circle cx="180" cy="120" r="5" fill="#3b82f6"/><text x="185" y="135" font-size="10" font-weight="bold">Truk X</text>
+                <circle cx="30" cy="30" r="5" fill="#10b981"/><text x="20" y="20" font-size="10" font-weight="bold">Truk Y</text>
+            </svg>`,
+            opsi: ["18 km", "20 km", "24 km", "28 km", "32 km"], jawabanBenar: 1,
+            pembahasan: "Teorema Pythagoras pada Peta Navigasi:\n- Jarak Truk X = 12 km (Selatan / Sumbu Y)\n- Jarak Truk Y = 16 km (Barat / Sumbu X)\n- Jarak antara X dan Y = √(12² + 16²) = √(144 + 256) = √400 = 20 km."
+        },
+        {
+            id: "MAP-05", kategori: "Navigasi Blok Perkotaan",
+            pertanyaan: "Sebuah kawasan bisnis terbagi menjadi blok-blok persegi berskala. Jika jarak dari Blok A ke Blok D adalah 4,5 km melewati 3 blok horizontal, berapa km total keliling area kompleks jika kawasan tersebut berbentuk persegi 4x4 blok?",
+            visualHtml: `<svg width="220" height="150" viewBox="0 0 220 150">
+                <rect x="40" y="20" width="140" height="110" fill="#e2e8f0" stroke="#0f172a" stroke-width="2"/>
+                <g stroke="#0f172a" stroke-width="1" stroke-dasharray="2">
+                    <line x1="75" y1="20" x2="75" y2="130"/><line x1="110" y1="20" x2="110" y2="130"/><line x1="145" y1="20" x2="145" y2="130"/>
+                    <line x1="40" y1="47" x2="180" y2="47"/><line x1="40" y1="75" x2="180" y2="75"/><line x1="40" y1="102" x2="180" y2="102"/>
+                </g>
+            </svg>`,
+            opsi: ["12 km", "18 km", "24 km", "30 km", "36 km"], jawabanBenar: 2,
+            pembahasan: "Kalkulasi Skala Blok:\n- 3 blok = 4,5 km -> 1 blok = 4,5 / 3 = 1,5 km.\n- Kawasan berbentuk persegi 4x4 blok.\n- Panjang 1 sisi kawasan = 4 blok × 1,5 km = 6 km.\n- Keliling Kawasan Kompleks = 4 × 6 km = 24 km."
+        },
+        {
+            id: "MAP-06", kategori: "Orientasi Arah Gedung",
+            pertanyaan: "Gedung Pintu Barat menatap tepat ke arah Gedung Pusat di sebelahnya. Jika seorang pengunjung berdiri di Gedung Pusat menghadap ke Menara Utara, lalu berputar 135° searah jarum jam, gedung/sektor apakah yang kini dipandangnya?",
+            visualHtml: `<svg width="220" height="160" viewBox="0 0 220 160">
+                <circle cx="110" cy="80" r="60" fill="#f8fafc" stroke="#334155" stroke-width="2"/>
+                <text x="110" y="30" font-size="10" font-weight="bold" text-anchor="middle">Menara Utara (U)</text>
+                <text x="175" y="85" font-size="10" font-weight="bold" text-anchor="middle">Sektor Timur (T)</text>
+                <text x="155" y="130" font-size="10" font-weight="bold" text-anchor="middle">Gedung Tenggara (TG)</text>
+                <circle cx="110" cy="80" r="8" fill="#0284c7"/>
+                <path d="M110,80 L110,35 M110,80 L150,120" stroke="#ef4444" stroke-width="2"/>
+            </svg>`,
+            opsi: ["Sektor Timur", "Gedung Tenggara", "Sektor Selatan", "Gedung Barat Daya", "Gedung Barat"], jawabanBenar: 1,
+            pembahasan: "Rotasi Sudut Arah Mata Angin:\n1. Awal: Menghadap UTARA (0° / 360°).\n2. Berputar 135° searah jarum jam:\n   - 90° = Menghadap TIMUR.\n   - Tambah 45° (Total 135°) = Menghadap TENGGARA.\nMaka pandangannya tertuju ke Gedung Tenggara."
+        },
+        {
+            id: "MAP-07", kategori: "Kalkulasi Jarak & Vektor KM",
+            pertanyaan: "Peta rute bus antarkota menunjukkan: Kota P ke Q berjarak 40 km ke Utara. Kota Q ke R berjarak 30 km ke Timur. Kota R ke S berjarak 80 km ke Selatan. Berapa km jarak lurus langsung dari Kota P ke Kota S?",
+            visualHtml: `<svg width="240" height="160" viewBox="0 0 240 160">
+                <path d="M40,60 L40,20 L160,20 L160,140" stroke="#0284c7" stroke-width="2" fill="none"/>
+                <line x1="40" y1="60" x2="160" y2="140" stroke="#ef4444" stroke-width="2.5" stroke-dasharray="4"/>
+                <text x="25" y="65" font-size="10" font-weight="bold">P</text>
+                <text x="25" y="25" font-size="10" font-weight="bold">Q</text>
+                <text x="170" y="25" font-size="10" font-weight="bold">R</text>
+                <text x="170" y="145" font-size="10" font-weight="bold">S</text>
+            </svg>`,
+            opsi: ["30 km", "40 km", "50 km", "70 km", "150 km"], jawabanBenar: 2,
+            pembahasan: "Hitung Vektor Total P -> S:\n- Sumbu Y (Utara-Selatan): 40 km (Utara) - 80 km (Selatan) = 40 km ke Selatan.\n- Sumbu X (Timur): 30 km ke Timur.\n- Jarak Lurus P-S = √(30² + 40²) = √(900 + 1600) = √2500 = 50 km."
+        },
+        {
+            id: "MAP-08", kategori: "Navigasi Blok Perkotaan",
+            pertanyaan: "Di sebuah kawasan perumahan sistem grid, Ahmad berjalan 4 blok ke Timur, 3 blok ke Utara, 2 blok ke Barat, dan 3 blok ke Selatan. Di manakah posisi Ahmad sekarang dibanding posisi awal?",
+            visualHtml: `<svg width="220" height="150" viewBox="0 0 220 150">
+                <rect x="20" y="20" width="180" height="110" fill="#f8fafc" stroke="#cbd5e1"/>
+                <path d="M40,90 L160,90 L160,30 L100,30 L100,90" stroke="#0284c7" stroke-width="3" fill="none"/>
+                <circle cx="40" cy="90" r="5" fill="#16a34a"/>
+                <circle cx="100" cy="90" r="5" fill="#ef4444"/>
+            </svg>`,
+            opsi: ["Tepat di posisi awal", "2 blok ke arah Timur", "2 blok ke arah Utara", "4 blok ke arah Timur", "3 blok ke arah Selatan"], jawabanBenar: 1,
+            pembahasan: "Posisi Relatif Blok:\n- Sumbu Y: Naik 3 blok (Utara) - Turun 3 blok (Selatan) = 0 (kembali sejajar horizontal).\n- Sumbu X: Kanan 4 blok (Timur) - Kiri 2 blok (Barat) = 2 blok ke Timur.\nJadi posisi Ahmad berjarak 2 blok di sebelah Timur titik awal."
+        },
+        {
+            id: "MAP-09", kategori: "Orientasi Arah Gedung",
+            pertanyaan: "Berdasarkan denah kompleks berikut, Gedung Rumah Sakit berada di sebelah mana jika ditinjau dari posisi Gedung Sekolah?",
+            visualHtml: `<svg width="240" height="150" viewBox="0 0 240 150">
+                <rect x="20" y="20" width="200" height="110" fill="#f8fafc" stroke="#334155" stroke-width="1.5"/>
+                <!-- Sekolah -->
+                <rect x="40" y="80" width="60" height="40" fill="#e0f2fe" stroke="#0284c7"/>
+                <text x="70" y="105" font-size="9" font-weight="bold" text-anchor="middle">Sekolah</text>
+                <!-- RS -->
+                <rect x="140" y="30" width="60" height="40" fill="#ffe4e6" stroke="#e11d48"/>
+                <text x="170" y="55" font-size="9" font-weight="bold" text-anchor="middle">Rumah Sakit</text>
+                <text x="205" y="25" font-size="11" font-weight="bold">U ↑</text>
+            </svg>`,
+            opsi: ["Barat Laut", "Timur Laut", "Barat Daya", "Tenggara", "Utara"], jawabanBenar: 1,
+            pembahasan: "Membaca Vektor Kompas Peta:\n- Gedung Sekolah berada di Kiri-Bawah (Barat Daya).\n- Rumah Sakit berada di Kanan-Atas relatif terhadap Sekolah (arah Kanan = Timur, Atas = Utara).\nMaka Rumah Sakit terletak di arah TIMUR LAUT dari Gedung Sekolah."
+        },
+        {
+            id: "MAP-10", kategori: "Kalkulasi Jarak & Vektor KM",
+            pertanyaan: "Drone patroli terbang mengitari batas wilayah perbatasan: 10 km ke Utara, 10 km ke Timur, 10 km ke Selatan, dan X km ke Barat hingga kembali ke sarang awal. Berapa km total jarak keliling lintasan drone?",
+            visualHtml: `<svg width="200" height="140" viewBox="0 0 200 140">
+                <rect x="50" y="30" width="80" height="80" fill="none" stroke="#0284c7" stroke-width="3" stroke-dasharray="4"/>
+                <circle cx="50" cy="110" r="6" fill="#16a34a"/>
+                <text x="40" y="125" font-size="9" font-weight="bold">Sarang</text>
+            </svg>`,
+            opsi: ["20 km", "30 km", "40 km", "50 km", "100 km"], jawabanBenar: 2,
+            pembahasan: "Kalkulasi Keliling Persegi:\n- Rute membentuk bangun datar persegi 10 km x 10 km.\n- Sisi Barat yang ditempuh (X km) harus sama dengan sisi Timur = 10 km.\n- Total Keliling Lintasan = 10 + 10 + 10 + 10 = 40 km."
+        },
+        {
+            id: "MAP-11", kategori: "Navigasi Blok Perkotaan",
+            pertanyaan: "Di dalam area peta Blok 5x5, Gedung Perpustakaan (P) berada di koordinat (1,1) dan Gedung Stadion (S) berada di (4,5). Jika tiap unit grid berjarak 2 km, berapa km jarak tempuh minimum kendaraan yang hanya bisa bergerak menyusuri jalan grid?",
+            visualHtml: `<svg width="220" height="160" viewBox="0 0 220 160">
+                <g stroke="#cbd5e1" stroke-width="1.5">
+                    <line x1="30" y1="30" x2="180" y2="30"/><line x1="30" y1="60" x2="180" y2="60"/>
+                    <line x1="30" y1="90" x2="180" y2="90"/><line x1="30" y1="120" x2="180" y2="120"/><line x1="30" y1="150" x2="180" y2="150"/>
+                    <line x1="30" y1="30" x2="30" y2="150"/><line x1="68" y1="30" x2="68" y2="150"/>
+                    <line x1="105" y1="30" x2="105" y2="150"/><line x1="142" y1="30" x2="142" y2="150"/><line x1="180" y1="30" x2="180" y2="150"/>
+                </g>
+                <circle cx="30" cy="150" r="6" fill="#0284c7"/><text x="20" y="155" font-size="10" font-weight="bold">P</text>
+                <circle cx="142" cy="30" r="6" fill="#ef4444"/><text x="150" y="25" font-size="10" font-weight="bold">S</text>
+            </svg>`,
+            opsi: ["7 km", "10 km", "14 km", "18 km", "20 km"], jawabanBenar: 2,
+            pembahasan: "Hitungan Jarak Grid (Manhattan Distance):\n- Selisih sumbu X (horizontal) = 4 - 1 = 3 unit grid.\n- Selisih sumbu Y (vertikal) = 5 - 1 = 4 unit grid.\n- Total unit grid = 3 + 4 = 7 unit.\n- Total KM = 7 unit × 2 km = 14 km."
+        },
+        {
+            id: "MAP-12", kategori: "Orientasi Arah Gedung",
+            pertanyaan: "Gedung Kantor Gubernur menghadap ke Selatan. Di sebelah kanan gedung terdapat Taman Kota. Jika Anda berdiri di Taman Kota menghadap ke Kantor Gubernur, ke arah manakah Anda sedang menghadap?",
+            visualHtml: `<svg width="240" height="150" viewBox="0 0 240 150">
+                <rect x="90" y="30" width="80" height="50" fill="#e0f2fe" stroke="#0284c7"/>
+                <text x="130" y="55" font-size="9" font-weight="bold" text-anchor="middle">Gedung Kantor</text>
+                <!-- Pintu Selatan -->
+                <rect x="115" y="80" width="30" height="5" fill="#ef4444"/>
+                <!-- Taman (Sisi Kanan Gedung saat menghadap Selatan -> Sisi Barat/Kiri Peta) -->
+                <rect x="20" y="30" width="50" height="50" fill="#dcfce7" stroke="#16a34a"/>
+                <text x="45" y="60" font-size="8" font-weight="bold" text-anchor="middle">Taman</text>
+                <text x="210" y="25" font-size="11" font-weight="bold">U ↑</text>
+            </svg>`,
+            opsi: ["Utara", "Selatan", "Timur", "Barat", "Tenggara"], jawabanBenar: 2,
+            pembahasan: "Perspektif Sisi Kanan/Kiri:\n- Gedung menghadap SELATAN -> Sisi kanan gedung berada di sebelah BARAT.\n- Taman Kota terletak di sebelah Barat gedung.\n- Jika seseorang berada di Taman Kota dan melihat ke arah Gedung (ke arah kanan peta), ia sedang menghadap ke TIMUR."
+        },
+        {
+            id: "MAP-13", kategori: "Kalkulasi Jarak & Vektor KM",
+            pertanyaan: "Sebuah kapal kargo berlayar dari Pelabuhan 24 km ke Barat, lalu 10 km ke Utara, kemudian 10 km ke Timur. Berapa km jarak garis lurus terdekat kapal dari Pelabuhan?",
+            visualHtml: `<svg width="240" height="150" viewBox="0 0 240 150">
+                <path d="M200,110 L60,110 L60,40 L120,40" stroke="#0284c7" stroke-width="2.5" fill="none"/>
+                <line x1="200" y1="110" x2="120" y2="40" stroke="#ef4444" stroke-width="2" stroke-dasharray="4"/>
+                <circle cx="200" cy="110" r="5" fill="#0f172a"/><text x="190" y="125" font-size="9" font-weight="bold">Pelabuhan</text>
+            </svg>`,
+            opsi: ["12 km", "14 km", "17 km", "20 km", "26 km"], jawabanBenar: 2,
+            pembahasan: "Hitung Vektor Akhir:\n- Sumbu X: 24 km (Barat) - 10 km (Timur) = 14 km ke Barat.\n- Sumbu Y: 10 km ke Utara.\n- Jarak Lurus = √(14² + 10²) = √(196 + 100) = √296 ≈ 17,2 km (dibulatkan 17 km)."
+        },
+        {
+            id: "MAP-14", kategori: "Navigasi Blok Perkotaan",
+            pertanyaan: "Seorang pesepeda menempuh lintasan memutari 3 blok pemukiman berbentuk persegi panjang berseri. Jika 1 blok berukuran panjang 0,8 km dan lebar 0,6 km, berapa km total jarak yang ditempuh untuk mengelilingi 3 blok bersatu tersebut?",
+            visualHtml: `<svg width="250" height="130" viewBox="0 0 250 130">
+                <rect x="20" y="30" width="60" height="60" fill="#f1f5f9" stroke="#0f172a" stroke-width="2"/>
+                <rect x="80" y="30" width="60" height="60" fill="#f1f5f9" stroke="#0f172a" stroke-width="2"/>
+                <rect x="140" y="30" width="60" height="60" fill="#f1f5f9" stroke="#0f172a" stroke-width="2"/>
+            </svg>`,
+            opsi: ["3,6 km", "4,8 km", "6,0 km", "7,2 km", "8,4 km"], jawabanBenar: 2,
+            pembahasan: "Keliling Gabungan 3 Blok Sejajar:\n- Panjang gabungan 3 blok = 3 × 0,8 km = 2,4 km.\n- Lebar gabungan = 0,6 km.\n- Total Keliling Luar = 2 × (Panjang Total + Lebar) = 2 × (2,4 + 0,6) = 2 × 3,0 = 6,0 km."
+        },
+        {
+            id: "MAP-15", kategori: "Orientasi Arah Gedung",
+            pertanyaan: "Peta kompleks menunjukkan Gedung A berada di Utara Gedung B. Gedung C berada di Barat Gedung A. Gedung D berada di Selatan Gedung C sejajar horizontal dengan Gedung B. Gedung D berada di sebelah mana dibanding Gedung B?",
+            visualHtml: `<svg width="220" height="150" viewBox="0 0 220 150">
+                <rect x="40" y="30" width="30" height="30" fill="#cbd5e1"/><text x="55" y="50" text-anchor="middle" font-weight="bold">C</text>
+                <rect x="140" y="30" width="30" height="30" fill="#cbd5e1"/><text x="155" y="50" text-anchor="middle" font-weight="bold">A</text>
+                <rect x="40" y="90" width="30" height="30" fill="#38bdf8"/><text x="55" y="110" text-anchor="middle" font-weight="bold">D</text>
+                <rect x="140" y="90" width="30" height="30" fill="#cbd5e1"/><text x="155" y="110" text-anchor="middle" font-weight="bold">B</text>
+            </svg>`,
+            opsi: ["Utara", "Selatan", "Timur", "Barat", "Barat Daya"], jawabanBenar: 3,
+            pembahasan: "Pemetaan Koordinat Gedung:\n- A = (2,2), B = (2,1)\n- C = (1,2) [Barat A]\n- D = (1,1) [Selatan C, sejajar B]\nKarena D dan B sejajar horizontal di Y=1, maka Gedung D berada persis di sebelah BARAT Gedung B."
+        },
+        {
+            id: "MAP-16", kategori: "Kalkulasi Jarak & Vektor KM",
+            pertanyaan: "Dua pos pengamatan P1 dan P2 berjarak 15 km (P2 berada di Timur P1). Sebuah target terdeteksi berjarak 9 km tepat di Selatan P1. Berapa km jarak langsung target tersebut dari pos P2?",
+            visualHtml: `<svg width="240" height="150" viewBox="0 0 240 150">
+                <line x1="40" y1="30" x2="180" y2="30" stroke="#0f172a" stroke-width="2"/>
+                <line x1="40" y1="30" x2="40" y2="110" stroke="#0f172a" stroke-width="2"/>
+                <line x1="180" y1="30" x2="40" y2="110" stroke="#ef4444" stroke-width="2.5" stroke-dasharray="4"/>
+                <circle cx="40" cy="30" r="5" fill="#0284c7"/><text x="30" y="20" font-size="9" font-weight="bold">P1</text>
+                <circle cx="180" cy="30" r="5" fill="#0284c7"/><text x="185" y="20" font-size="9" font-weight="bold">P2</text>
+                <circle cx="40" cy="110" r="5" fill="#ef4444"/><text x="25" y="125" font-size="9" font-weight="bold">Target</text>
+            </svg>`,
+            opsi: ["12 km", "17,5 km", "18 km", "21 km", "24 km"], jawabanBenar: 1,
+            pembahasan: "Hitung Sisi Miring Segitiga Siku-siku:\n- Alas (P1-P2) = 15 km.\n- Tinggi (P1-Target) = 9 km.\n- Jarak P2-Target = √(15² + 9²) = √(225 + 81) = √306 ≈ 17,49 km (dibulatkan 17,5 km)."
+        },
+        {
+            id: "MAP-17", kategori: "Navigasi Blok Perkotaan",
+            pertanyaan: "Dalam peta rute logistik, dari Blok I ke Blok II berjarak 2,5 km. Dari Blok II ke Blok III berjarak 3,5 km. Dari Blok III ke Blok IV berjarak 4 km. Jika rute berbentuk garis lurus searah ke Timur, berapa km total jarak dari Blok I langsung ke Blok IV?",
+            visualHtml: `<svg width="250" height="100" viewBox="0 0 250 100">
+                <line x1="20" y1="50" x2="230" y2="50" stroke="#0284c7" stroke-width="3"/>
+                <circle cx="30" cy="50" r="6" fill="#0f172a"/><text x="30" y="70" font-size="9" font-weight="bold" text-anchor="middle">I</text>
+                <circle cx="90" cy="50" r="6" fill="#0f172a"/><text x="90" y="70" font-size="9" font-weight="bold" text-anchor="middle">II</text>
+                <circle cx="160" cy="50" r="6" fill="#0f172a"/><text x="160" y="70" font-size="9" font-weight="bold" text-anchor="middle">III</text>
+                <circle cx="220" cy="50" r="6" fill="#0f172a"/><text x="220" y="70" font-size="9" font-weight="bold" text-anchor="middle">IV</text>
+            </svg>`,
+            opsi: ["7,5 km", "8,5 km", "9,5 km", "10,0 km", "11,5 km"], jawabanBenar: 3,
+            pembahasan: "Kalkulasi Penjumlahan Jarak Skalar:\nTotal Jarak = (I ke II) + (II ke III) + (III ke IV) = 2,5 km + 3,5 km + 4,0 km = 10,0 km."
+        },
+        {
+            id: "MAP-18", kategori: "Orientasi Arah Gedung",
+            pertanyaan: "Seseorang menghadap ke Menara Bandara di arah Barat Daya. Jika ia berputar 90° berlawanan arah jarum jam, arah mata angin manakah yang kini dihadapinya?",
+            visualHtml: `<svg width="200" height="150" viewBox="0 0 200 150">
+                <circle cx="100" cy="75" r="50" fill="none" stroke="#cbd5e1" stroke-width="2"/>
+                <path d="M100,75 L65,110 M100,75 L135,110" stroke="#ef4444" stroke-width="2.5"/>
+                <text x="50" y="125" font-size="9" font-weight="bold">Barat Daya</text>
+                <text x="130" y="125" font-size="9" font-weight="bold">Tenggara</text>
+            </svg>`,
+            opsi: ["Barat Laut", "Tenggara", "Timur Laut", "Utara", "Selatan"], jawabanBenar: 1,
+            pembahasan: "Rotasi Arah Mata Angin Berlawanan Jarum Jam (CCW):\n- Posisi Awal = Barat Daya (225°).\n- Diputar 90° CCW = 225° - 90° = 135°.\n- Sudut 135° pada kompas mewakili arah TENGGARA."
+        },
+        {
+            id: "MAP-19", kategori: "Kalkulasi Jarak & Vektor KM",
+            pertanyaan: "Perjalanan dari Kota A ke Kota B membutuhkan rute 50 km ke Timur, lalu 120 km ke Utara. Berapa km penghematan jarak jika dibangun jalan tol layang lurus yang menghubungkan langsung Kota A ke Kota B?",
+            visualHtml: `<svg width="240" height="150" viewBox="0 0 240 150">
+                <path d="M30,120 L110,120 L110,20" stroke="#0284c7" stroke-width="2" fill="none"/>
+                <line x1="30" y1="120" x2="110" y2="20" stroke="#16a34a" stroke-width="3"/>
+                <text x="20" y="135" font-size="9" font-weight="bold">Kota A</text>
+                <text x="115" y="20" font-size="9" font-weight="bold">Kota B</text>
+            </svg>`,
+            opsi: ["30 km", "40 km", "50 km", "60 km", "130 km"], jawabanBenar: 1,
+            pembahasan: "Hitung Jarak & Selisih Penghematan:\n1. Jarak Rute Biasa = 50 + 120 = 170 km.\n2. Jarak Tol Lurus = √(50² + 120²) = √(2500 + 14400) = √16900 = 130 km.\n3. Penghematan Jarak = 170 km - 130 km = 40 km."
+        },
+        {
+            id: "MAP-20", kategori: "Navigasi Blok Perkotaan",
+            pertanyaan: "Peta kawasan industri menunjukkan jalan perblok sepanjang 1,2 km. Truk forklift harus bergerak dari Blok A-1 ke C-3 melewati lintasan grid. Berapa km jarak total minimum yang ditempuh?",
+            visualHtml: `<svg width="200" height="140" viewBox="0 0 200 140">
+                <rect x="30" y="20" width="120" height="90" fill="none" stroke="#0f172a" stroke-width="2"/>
+                <line x1="70" y1="20" x2="70" y2="110" stroke="#cbd5e1"/>
+                <line x1="110" y1="20" x2="110" y2="110" stroke="#cbd5e1"/>
+                <line x1="30" y1="50" x2="150" y2="50" stroke="#cbd5e1"/>
+                <line x1="30" y1="80" x2="150" y2="80" stroke="#cbd5e1"/>
+            </svg>`,
+            opsi: ["2,4 km", "3,6 km", "4,8 km", "6,0 km", "7,2 km"], jawabanBenar: 2,
+            pembahasan: "Hitungan Grid Manhattan (A-1 ke C-3):\n- Pergeseran Horizontal = 2 blok.\n- Pergeseran Vertikal = 2 blok.\n- Total Blok Terpendek = 2 + 2 = 4 blok.\n- Total KM = 4 blok × 1,2 km = 4,8 km."
+        },
+        {
+            id: "MAP-21", kategori: "Orientasi Arah Gedung",
+            pertanyaan: "Sebuah kompleks memiliki Gedung Rektorat di pusat peta. Di sebelah Timur Rektorat terdapat Perpustakaan, dan di sebelah Utara Rektorat terdapat Laboratorium. Jika mahasiswa berjalan lurus dari Perpustakaan menuju Laboratorium, ia berjalan ke arah...",
+            visualHtml: `<svg width="220" height="150" viewBox="0 0 220 150">
+                <rect x="90" y="70" width="40" height="30" fill="#cbd5e1"/><text x="110" y="88" font-size="8" font-weight="bold" text-anchor="middle">Rektorat</text>
+                <rect x="160" y="70" width="40" height="30" fill="#e0f2fe"/><text x="180" y="88" font-size="8" font-weight="bold" text-anchor="middle">Perpus</text>
+                <rect x="90" y="15" width="40" height="30" fill="#fef3c7"/><text x="110" y="33" font-size="8" font-weight="bold" text-anchor="middle">Lab</text>
+                <line x1="160" y1="70" x2="130" y2="45" stroke="#ef4444" stroke-width="2" stroke-dasharray="3"/>
+            </svg>`,
+            opsi: ["Barat Daya", "Barat Laut", "Tenggara", "Timur Laut", "Utara"], jawabanBenar: 1,
+            pembahasan: "Vektor Arah Lintasan:\n- Posisi Awal (Perpustakaan) = Kanan-Bawah (Timur).\n- Posisi Tujuan (Laboratorium) = Kiri-Atas (Utara).\n- Bergerak dari Kanan ke Kiri (Barat) dan dari Bawah ke Atas (Utara) = Arah BARAT LAUT."
+        },
+        {
+            id: "MAP-22", kategori: "Kalkulasi Jarak & Vektor KM",
+            pertanyaan: "Helikopter SAR terbang 30 km ke Barat, kemudian 40 km ke Selatan untuk menolong korban. Dari titik korban, helikopter harus kembali langsung ke pangkalan awal. Berapa km jarak penerbangan kembali tersebut?",
+            visualHtml: `<svg width="220" height="150" viewBox="0 0 220 150">
+                <path d="M180,20 L60,20 L60,110" stroke="#0284c7" stroke-width="2" fill="none"/>
+                <line x1="60" y1="110" x2="180" y2="20" stroke="#ef4444" stroke-width="2.5" stroke-dasharray="4"/>
+                <circle cx="180" cy="20" r="5" fill="#16a34a"/>
+                <circle cx="60" cy="110" r="5" fill="#ef4444"/>
+            </svg>`,
+            opsi: ["35 km", "45 km", "50 km", "60 km", "70 km"], jawabanBenar: 2,
+            pembahasan: "Jarak Lurus Kembali (Hipotenusa):\n- Sisi Tegak = 40 km, Sisi Datar = 30 km.\n- Jarak Langsung = √(30² + 40²) = √(900 + 1600) = √2500 = 50 km."
+        },
+        {
+            id: "MAP-23", kategori: "Navigasi Blok Perkotaan",
+            pertanyaan: "Sebuah jalan perimeter mengelilingi 4 blok pemukiman sejajar. Jika total panjang jalan keliling luar tersebut adalah 16 km dan lebar kawasan adalah 2 km, berapa km panjang 1 blok pemukiman tersebut?",
+            visualHtml: `<svg width="240" height="120" viewBox="0 0 240 120">
+                <rect x="20" y="20" width="200" height="80" fill="none" stroke="#0f172a" stroke-width="2"/>
+                <line x1="70" y1="20" x2="70" y2="100" stroke="#cbd5e1"/>
+                <line x1="120" y1="20" x2="120" y2="100" stroke="#cbd5e1"/>
+                <line x1="170" y1="20" x2="170" y2="100" stroke="#cbd5e1"/>
+            </svg>`,
+            opsi: ["1,0 km", "1,5 km", "2,0 km", "2,5 km", "3,0 km"], jawabanBenar: 1,
+            pembahasan: "Aljabar Bangun Keliling Blok:\n- Keliling = 2 × (Panjang Total + Lebar) = 16 km.\n- Panjang Total + 2 = 8 -> Panjang Total = 6 km.\n- Karena ada 4 blok sejajar, maka panjang 1 blok = 6 km / 4 = 1,5 km."
+        },
+        {
+            id: "MAP-24", kategori: "Orientasi Arah Gedung",
+            pertanyaan: "Pintu masuk Gedung Stasion Kereta berada di sisi Selatan. Seorang calon penumpang keluar dari pintu masuk tersebut, lalu berjalan lurus sejauh 100 meter, belok kiri, dan berjalan 50 meter. Ke arah manakah penumpang tersebut sekarang bergerak?",
+            visualHtml: `<svg width="220" height="150" viewBox="0 0 220 150">
+                <rect x="60" y="20" width="100" height="40" fill="#cbd5e1"/>
+                <path d="M110,60 L110,120 L170,120" stroke="#0284c7" stroke-width="3" fill="none"/>
+                <text x="200" y="25" font-size="11" font-weight="bold">U ↑</text>
+            </svg>`,
+            opsi: ["Utara", "Selatan", "Timur", "Barat", "Barat Daya"], jawabanBenar: 2,
+            pembahasan: "Navigasi Keluar Pintu:\n1. Keluar dari Pintu Selatan = Berjalan menghadap SELATAN.\n2. Berjalan lurus 100 m ke Selatan.\n3. Belok KIRI dari posisi menghadap Selatan = Menghadap dan bergerak ke arah TIMUR."
+        },
+        {
+            id: "MAP-25", kategori: "Kalkulasi Jarak & Vektor KM",
+            pertanyaan: "Tim penjelajah membuat peta perjalanan: Start -> 8 km ke Timur -> 6 km ke Utara -> 8 km ke Barat -> 6 km ke Selatan. Berapa km total jarak tempuh skalar dan berapa km jarak perpindahan dari titik awal?",
+            visualHtml: `<svg width="220" height="140" viewBox="0 0 220 140">
+                <rect x="50" y="30" width="120" height="80" fill="none" stroke="#0284c7" stroke-width="2.5"/>
+                <circle cx="50" cy="110" r="6" fill="#16a34a"/>
+                <text x="35" y="125" font-size="9" font-weight="bold">Start / Finish</text>
+            </svg>`,
+            opsi: ["Jarak 28 km, Perpindahan 0 km", "Jarak 14 km, Perpindahan 14 km", "Jarak 28 km, Perpindahan 28 km", "Jarak 0 km, Perpindahan 28 km", "Jarak 20 km, Perpindahan 10 km"], jawabanBenar: 0,
+            pembahasan: "Perbedaan Jarak dan Perpindahan:\n- Total Jarak Skalar (Seluruh Lintasan) = 8 + 6 + 8 + 6 = 28 km.\n- Perpindahan Vektor (Jarak Lurus Awal-Akhir) = Karena kembali ke titik awal (Start), perpindahannya adalah 0 km."
+        }
+    ];
+
+    let bankSoal = [];
+    let currentQ = 0;
+    let userAnswers = {};
+    let timerInterval;
+
+    window.addEventListener('DOMContentLoaded', () => {
+        // Cek Expiration Protocol Security
+        if (new Date().getTime() > EXPIRATION_DATE) {
+            alert("Masa berlaku modul tes ini telah berakhir (Expired). Silakan hubungi Persona Research & Consulting.");
+            document.body.innerHTML = "<h2 style='text-align:center; margin-top:50px; color:red;'>MODUL TERKUNCI / EXPIRED</h2>";
+            return;
+        }
+
+        // Auto-shuffle pilihan jawaban per soal secara acak & aman
+        bankSoal = rawBankSoal.map(q => {
+            let originalOps = [...q.opsi];
+            let correctText = originalOps[q.jawabanBenar];
+            
+            let shuffledOps = [...originalOps];
+            for (let i = shuffledOps.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffledOps[i], shuffledOps[j]] = [shuffledOps[j], shuffledOps[i]];
+            }
+            
+            let newCorrectIdx = shuffledOps.indexOf(correctText);
+            return {
+                ...q,
+                opsi: shuffledOps,
+                jawabanBenar: newCorrectIdx
+            };
+        });
+
+        renderNav();
+        loadQ(0);
+        startTimer(35 * 60);
+    });
+
+    function loadQ(idx) {
+        currentQ = idx;
+        const qData = bankSoal[idx];
+        document.getElementById('q-no').innerText = `Soal ${idx + 1} dari ${bankSoal.length}`;
+        document.getElementById('q-kat').innerText = qData.kategori;
+        document.getElementById('q-text').innerText = qData.pertanyaan;
+        document.getElementById('q-visual').innerHTML = qData.visualHtml;
+        
+        let html = '';
+        qData.opsi.forEach((opt, i) => {
+            const isSelected = userAnswers[idx] === i ? 'selected' : '';
+            html += `<div class="opt ${isSelected}" onclick="selectOpt(${i})">${String.fromCharCode(65+i)}. ${opt}</div>`;
+        });
+        document.getElementById('options').innerHTML = html;
+        document.getElementById('btn-next').innerText = idx === bankSoal.length - 1 ? "Selesai" : "Selanjutnya";
+        renderNav();
+    }
+
+    function selectOpt(optIdx) {
+        userAnswers[currentQ] = optIdx;
+        loadQ(currentQ);
+        setTimeout(() => { nextQ(); }, 250);
+    }
+
+    function renderNav() {
+        let html = '';
+        for(let i = 0; i < bankSoal.length; i++) {
+            let cls = 'nav-item';
+            if(userAnswers[i] !== undefined) cls += ' filled';
+            if(i === currentQ) cls += ' active';
+            html += `<div class="${cls}" onclick="loadQ(${i})">${i + 1}</div>`;
+        }
+        document.getElementById('navGrid').innerHTML = html;
+    }
+
+    function nextQ() {
+        if(currentQ === bankSoal.length - 1) {
+            if(confirm("Apakah Anda yakin ingin menyelesaikan Simulasi Tes Spasial & Denah Map ini?")) finishTest();
+            return;
+        }
+        loadQ(currentQ + 1);
+    }
+
+    function prevQ() {
+        if(currentQ > 0) loadQ(currentQ - 1);
+    }
+
+    function startTimer(seconds) {
+        let t = seconds;
+        timerInterval = setInterval(() => {
+            let m = Math.floor(t / 60);
+            let s = t % 60;
+            document.getElementById('timer').innerText = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+            if(--t < 0) {
+                clearInterval(timerInterval);
+                finishTest();
+            }
+        }, 1000);
+    }
+
+    function finishTest() {
+        clearInterval(timerInterval);
+        document.getElementById('page-test').style.display = 'none';
+        document.getElementById('page-result').style.display = 'block';
+
+        let benar = 0;
+        let salah = 0;
+        let kosong = 0;
+        let katStats = {};
+
+        bankSoal.forEach((q, i) => {
+            if (!katStats[q.kategori]) {
+                katStats[q.kategori] = { total: 0, benar: 0 };
+            }
+            katStats[q.kategori].total++;
+
+            if (userAnswers[i] === undefined) {
+                kosong++;
+            } else if (userAnswers[i] === q.jawabanBenar) {
+                benar++;
+                katStats[q.kategori].benar++;
+            } else {
+                salah++;
+            }
+        });
+
+        const totalSoal = bankSoal.length;
+        const skor = (benar / totalSoal) * 100;
+        const persentase = skor;
+
+        document.getElementById('res-skor').innerText = `${skor.toFixed(0)} / 100`;
+        document.getElementById('res-persen').innerText = `${persentase.toFixed(0)}%`;
+        document.getElementById('res-detail').innerText = `${benar} Benar / ${salah} Salah / ${kosong} Kosong`;
+
+        let katHtml = '';
+        for (let kat in katStats) {
+            let p = (katStats[kat].benar / katStats[kat].total) * 100;
+            katHtml += `
+                <tr>
+                    <td><b>${kat}</b></td>
+                    <td>${katStats[kat].total}</td>
+                    <td>${katStats[kat].benar}</td>
+                    <td><b>${p.toFixed(0)}%</b></td>
+                </tr>
+            `;
+        }
+        document.querySelector('#table-kategori tbody').innerHTML = katHtml;
+
+        let saranText = '';
+        if (persentase >= 80) {
+            saranText = "<b>KEMAMPUAN NAVIGASI SPASIAL SANGAT UNGGUL!</b> Anda memiliki daya pemetaan rute, orientasi arah mata angin gedung, dan kalkulasi jarak lurus (vektor km) yang presisi tinggi.";
+        } else if (persentase >= 60) {
+            saranText = "<b>KEMAMPUAN KATEGORI BAIK.</b> Pemahaman denah dan navigasi grid Anda sudah bagus, namun perlu ditingkatkan ketelitiannya pada perhitungan segitiga vektor diagonal.";
+        } else {
+            saranText = "<b>PERLU LATIHAN INTENSIF.</b> Pelajari secara saksama setiap pola perhitungan kompas, jarak Manhattan blok, dan analisis vektor pada pembahasan di bawah.";
+        }
+        document.getElementById('saran-box').innerHTML = saranText;
+
+        let pemHtml = '';
+        bankSoal.forEach((q, i) => {
+            let uAns = userAnswers[i];
+            let statusBadge = '';
+            let uAnsText = uAns !== undefined ? `${String.fromCharCode(65+uAns)}. ${q.opsi[uAns]}` : '<i>Tidak Dijawab</i>';
+            let cAnsText = `${String.fromCharCode(65+q.jawabanBenar)}. ${q.opsi[q.jawabanBenar]}`;
+
+            if (uAns === undefined) {
+                statusBadge = '<span class="badge-kosong">KOSONG</span>';
+            } else if (uAns === q.jawabanBenar) {
+                statusBadge = '<span class="badge-benar">BENAR</span>';
+            } else {
+                statusBadge = '<span class="badge-salah">SALAH</span>';
+            }
+
+            pemHtml += `
+                <div style="margin-bottom:20px; border-bottom:1px solid #e2e8f0; padding-bottom:15px;">
+                    <div style="font-weight:bold; color:var(--navy);">Soal ${i + 1} (${q.kategori}) - Status: ${statusBadge}</div>
+                    <div style="margin:8px 0; font-size:14.5px;">${q.pertanyaan}</div>
+                    <div class="visual-container" style="max-width:280px; margin:10px 0;">${q.visualHtml}</div>
+                    <div style="font-size:13.5px; color:#475569;">
+                        <div>Jawaban Anda: ${uAnsText}</div>
+                        <div>Jawaban Benar: <b>${cAnsText}</b></div>
+                    </div>
+                    <div class="pembahasan-box">
+                        <b>Analisis Pembahasan:</b><br>${q.pembahasan.replace(/\n/g, '<br>')}
+                    </div>
+                </div>
+            `;
+        });
+        document.getElementById('pembahasan-container').innerHTML = pemHtml;
+        window.scrollTo(0,0);
+    }
+</script>
+</body>
+</html>

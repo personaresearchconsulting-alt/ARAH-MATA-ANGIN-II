@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PERSONA RESEARCH & CONSULTING - Psikotes Polri HOTS (Matahari, Bayangan & Kompas)</title>
+    <style>
+        :root { --navy: #0b2340; --gold: #d4a017; --bg: #f8fafc; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: var(--bg); color: #1e293b; -webkit-user-select: none; user-select: none; }
+        header { background: var(--navy); color: white; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid var(--gold); }
+        .container { max-width: 1000px; margin: 20px auto; padding: 0 15px; }
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .opt { padding: 14px; margin: 8px 0; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+        .opt:hover { background: #f1f5f9; border-color: var(--navy); }
+        .opt.selected { background: #e0f2fe; border-color: var(--navy); font-weight: bold; }
+        .nav-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-top: 15px; }
+        .nav-item { height: 36px; display: flex; align-items: center; justify-content: center; border: 1px solid #cbd5e1; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; }
+        .nav-item.filled { background: var(--navy); color: white; }
+        .nav-item.active { border: 2px solid var(--gold); }
+        .btn { background: var(--navy); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .btn:hover { opacity: 0.9; }
+        .btn-gold { background: var(--gold); color: var(--navy); }
+        #timer { font-size: 20px; font-weight: bold; color: var(--gold); font-family: monospace; }
+        
+        .visual-container { width: 100%; text-align: center; margin: 15px 0; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px; box-sizing: border-box; }
+        .visual-container svg { max-width: 100%; height: auto; max-height: 260px; }
+
+        .rekap-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13.5px; }
+        .rekap-table th, .rekap-table td { border: 1px solid #cbd5e1; padding: 8px 12px; text-align: left; }
+        .rekap-table th { background-color: var(--navy); color: white; }
+        .badge-benar { color: #16a34a; font-weight: bold; }
+        .badge-salah { color: #dc2626; font-weight: bold; }
+        .badge-kosong { color: #d97706; font-weight: bold; }
+        .pembahasan-box { background: #f1f5f9; border-left: 4px solid var(--navy); padding: 12px; margin-top: 10px; font-size: 13.5px; border-radius: 0 6px 6px 0; line-height: 1.5; }
+        
+        @media print {
+            header, .no-print, button { display: none !important; }
+            body { background: white; color: black; -webkit-user-select: auto; user-select: auto; }
+            .container { max-width: 100%; margin: 0; padding: 0; }
+            .card { box-shadow: none; border: 1px solid #ccc; }
+        }
+    </style>
+</head>
+<body oncontextmenu="return false" onkeydown="return false">
+
+<div class="container">
+    <header>
+        <div>
+            <b>PERSONA RESEARCH & CONSULTING</b> | PSIKOTES POLRI HOTS
+            <div style="font-size: 11px; font-weight: normal; color: #cbd5e1;">25 Soal Navigasi: Korelasi Bayangan Objek, Posisi Matahari & Dial Kompas | WA: 0877 425 5786</div>
+        </div>
+        <div id="timer">35:00</div>
+    </header>
+
+    <!-- Halaman Pengerjaan Soal -->
+    <div id="page-test" style="margin-top:20px;">
+        <div style="display:flex; gap:20px; flex-wrap:wrap;">
+            <div style="flex:3; min-width:300px;">
+                <div class="card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                        <div id="q-no" style="font-weight:bold; color:var(--navy);">Soal 1 dari 25</div>
+                        <div id="q-kat" style="font-size:12px; background:#e0f2fe; color:var(--navy); padding:3px 8px; border-radius:4px; font-weight:600;">Kategori</div>
+                    </div>
+                    <div id="q-text" style="font-size:15px; line-height:1.6; margin-bottom:15px;"></div>
+                    <div id="q-visual" class="visual-container"></div>
+                    <div id="options"></div>
+                    <div style="margin-top:25px; display:flex; justify-content:space-between;">
+                        <button class="btn" onclick="prevQ()" style="background:#64748b">Sebelumnya</button>
+                        <button class="btn" id="btn-next" onclick="nextQ()">Selanjutnya</button>
+                    </div>
+                </div>
+            </div>
+
+            <div style="flex:1; min-width:220px;">
+                <div class="card" style="padding:15px;">
+                    <div style="text-align:center; font-size:12px; font-weight:bold; margin-bottom:10px; color:var(--navy);">NAVIGASI SOAL</div>
+                    <div id="navGrid" class="nav-grid"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Halaman Hasil & Pembahasan -->
+    <div id="page-result" style="display:none; margin-top:20px;">
+        <div class="card">
+            <h2 style="color:var(--navy); border-bottom:2px solid var(--gold); padding-bottom:10px; margin-top:0;">HASIL EVALUASI PSIKOTES POLRI (NAVIGASI BAYANGAN & MATAHARI)</h2>
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:15px; margin:20px 0;">
+                <div style="background:#f1f5f9; padding:12px; border-radius:8px; text-align:center;">
+                    <div style="font-size:12px; color:#64748b;">SKOR AKHIR</div>
+                    <div id="res-skor" style="font-size:22px; font-weight:bold; color:var(--navy);">-</div>
+                </div>
+                <div style="background:#f1f5f9; padding:12px; border-radius:8px; text-align:center;">
+                    <div style="font-size:12px; color:#64748b;">PERSENTASE</div>
+                    <div id="res-persen" style="font-size:22px; font-weight:bold; color:var(--navy);">-</div>
+                </div>
+                <div style="background:#f1f5f9; padding:12px; border-radius:8px; text-align:center;">
+                    <div style="font-size:12px; color:#64748b;">BENAR / SALAH / KOSONG</div>
+                    <div id="res-detail" style="font-size:16px; font-weight:bold; color:var(--navy);">-</div>
+                </div>
+            </div>
+
+            <button class="btn btn-gold no-print" onclick="window.print()" style="width:100%; margin-bottom:20px; font-size:15px;">CETAK / SIMPAN HASIL LAPORAN (PDF)</button>
+
+            <h3 style="color:var(--navy); margin-top:25px;">ANALISIS SUB-KATEGORI SOAL</h3>
+            <table class="rekap-table" id="table-kategori">
+                <thead>
+                    <tr>
+                        <th>Sub-Materi Psikotes</th>
+                        <th>Jumlah Soal</th>
+                        <th>Jawaban Benar</th>
+                        <th>Penguasaan (%)</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+
+            <h3 style="color:var(--navy); margin-top:25px;">REKOMENDASI KELULUSAN PSIKOTES POLRI</h3>
+            <div id="saran-box" class="pembahasan-box" style="border-left-color:var(--gold);"></div>
+
+            <h3 style="color:var(--navy); margin-top:25px;">PEMBAHASAN SOAL & ANALISIS DIAGRAM</h3>
+            <div id="pembahasan-container"></div>
+
+            <div style="margin-top:20px;" class="no-print">
+                <button class="btn" onclick="location.reload()" style="width:100%; padding:12px;">ULANGI SIMULASI TES</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const EXPIRATION_DATE = new Date('2026-12-31T23:59:59').getTime();
+
+    // 1. Visual SVG Bayangan Tiang & Matahari
+    function generateSunShadowSVG(sunAngleDegree, shadowLength = 60) {
+        const radSun = (sunAngleDegree - 90) * (Math.PI / 180);
+        const sunX = 130 + 90 * Math.cos(radSun);
+        const sunY = 130 + 90 * Math.sin(radSun);
+
+        const shadowRad = sunAngleDegree >= 180 ? (sunAngleDegree - 180 - 90) * (Math.PI / 180) : (sunAngleDegree + 180 - 90) * (Math.PI / 180);
+        const shadowX = 130 + shadowLength * Math.cos(shadowRad);
+        const shadowY = 130 + shadowLength * Math.sin(shadowRad);
+
+        return `<svg width="260" height="220" viewBox="0 0 260 220">
+            <rect width="260" height="220" fill="#f8fafc" rx="8" stroke="#cbd5e1"/>
+            <!-- Kompas Penunjuk Utama -->
+            <text x="130" y="20" font-size="11" font-weight="bold" fill="#dc2626" text-anchor="middle">UTARA (0°)</text>
+            <text x="245" y="134" font-size="10" font-weight="bold" fill="#475569" text-anchor="middle">T</text>
+            <text x="130" y="212" font-size="10" font-weight="bold" fill="#475569" text-anchor="middle">S</text>
+            <text x="15" y="134" font-size="10" font-weight="bold" fill="#475569" text-anchor="middle">B</text>
+
+            <!-- Garis Lapangan -->
+            <circle cx="130" cy="130" r="75" stroke="#e2e8f0" stroke-width="1" fill="none" stroke-dasharray="4"/>
+            <line x1="130" y1="25" x2="130" y2="200" stroke="#cbd5e1" stroke-width="1"/>
+            <line x1="25" y1="130" x2="235" y2="130" stroke="#cbd5e1" stroke-width="1"/>
+
+            <!-- Sinar Matahari -->
+            <line x1="${sunX}" y1="${sunY}" x2="130" y2="130" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="3"/>
+            <!-- Matahari -->
+            <circle cx="${sunX}" cy="${sunY}" r="12" fill="#f59e0b" stroke="#d97706" stroke-width="2"/>
+
+            <!-- Bayangan di Tanah -->
+            <line x1="130" y1="130" x2="${shadowX}" y2="${shadowY}" stroke="#334155" stroke-width="5" stroke-linecap="round"/>
+            <polygon points="${shadowX},${shadowY} ${130 + (shadowLength-8)*Math.cos(shadowRad-0.1)},${130 + (shadowLength-8)*Math.sin(shadowRad-0.1)} ${130 + (shadowLength-8)*Math.cos(shadowRad+0.1)},${130 + (shadowLength-8)*Math.sin(shadowRad+0.1)}" fill="#334155"/>
+
+            <!-- Tiang Pancang Utama -->
+            <circle cx="130" cy="130" r="6" fill="#0f172a"/>
+            <circle cx="130" cy="130" r="2" fill="#ffffff"/>
+        </svg>`;
+    }
+
+    // 2. Visual SVG Kompas Beralih (Terguling/Terputar)
+    function generateShiftedCompassSVG(northAngle) {
+        const rad = (northAngle - 90) * (Math.PI / 180);
+        const xN = 100 + 60 * Math.cos(rad);
+        const yN = 100 + 60 * Math.sin(rad);
+
+        const radS = (northAngle + 90) * (Math.PI / 180);
+        const xS = 100 + 60 * Math.cos(radS);
+        const yS = 100 + 60 * Math.sin(radS);
+
+        return `<svg width="200" height="200" viewBox="0 0 200 200">
+            <circle cx="100" cy="100" r="85" fill="#0f172a" stroke="#cbd5e1" stroke-width="2"/>
+            <circle cx="100" cy="100" r="70" fill="#ffffff"/>
+            <!-- Jarum Merah (Utara Sebenarnya) -->
+            <line x1="100" y1="100" x2="${xN}" y2="${yN}" stroke="#ef4444" stroke-width="4" stroke-linecap="round"/>
+            <polygon points="${xN},${yN} ${100 + 48*Math.cos(rad-0.2)},${100 + 48*Math.sin(rad-0.2)} ${100 + 48*Math.cos(rad+0.2)},${100 + 48*Math.sin(rad+0.2)}" fill="#ef4444"/>
+            <text x="${100 + 72*Math.cos(rad)}" y="${100 + 72*Math.sin(rad) + 4}" font-size="11" font-weight="bold" fill="#dc2626" text-anchor="middle">U</text>
+
+            <!-- Jarum Hitam (Selatan) -->
+            <line x1="100" y1="100" x2="${xS}" y2="${yS}" stroke="#334155" stroke-width="4" stroke-linecap="round"/>
+            <circle cx="100" cy="100" r="6" fill="#d4a017"/>
+        </svg>`;
+    }
+
+    // Bank 25 Soal Psikotes Polri HOTS
+    const rawBankSoal = [];
+    const katBayangan = "Orientasi Bayangan & Waktu";
+    const katKompasShift = "Rotasi Dial Kompas Rusak/Terguling";
+    const katJamKompas = "Korelasi Jam Analog & Bayangan";
+
+    for (let i = 1; i <= 25; i++) {
+        let qObj = {};
+        let mod = i % 3;
+
+        if (mod === 1) {
+            // Tipe 1: Orientasi Bayangan Jam Tertentu
+            let jamPagi = 8 + (i % 4); // Jam 8, 9, 10, atau 11
+            let angleMatahari = 90 + (jamPagi - 6) * 15; // Dalam kompas standar (Timur = 90 deg)
+            let arahBayangan = (angleMatahari + 180) % 360;
+
+            qObj = {
+                id: `BAY-${i}`, kategori: katBayangan,
+                pertanyaan: `[Soal ${i}] Pada pukul ${jamPagi}.00 WIB di suatu daerah operasional, sebuah tiang bendera memancarkan bayangan di tanah akibat sinar matahari. Berdasarkan diagram posisi matahari, ke arah manakah (azimuth kompas) ujung bayangan tiang tersebut menunjuk?`,
+                visualHtml: generateSunShadowSVG(angleMatahari, 65),
+                opsi: [`${arahBayangan}° (Barat Daya/Barat Laut)`, `${(arahBayangan + 90) % 360}°`, `${(arahBayangan + 180) % 360}°`, `${(arahBayangan + 45) % 360}°`, `${(arahBayangan + 135) % 360}°`],
+                jawabanBenar: 0,
+                pembahasan: `Analisis Bayangan Matahari:\n- Pukul ${jamPagi}.00 WIB, posisi matahari berada di sisi TIMUR dengan azimuth ${angleMatahari}°.\n- Bayangan objek selalu berlawanan arah 180° dari posisi matahari.\n- Arah bayangan = ${angleMatahari}° + 180° = ${arahBayangan}°.`
+            };
+        } else if (mod === 2) {
+            // Tipe 2: Rotasi Dial Kompas Rusak / Terguling
+            let deviasi = (i * 30) % 360;
+            if (deviasi === 0) deviasi = 45;
+            let targetTampak = 90; // Tampak di kanan dial kompas
+            let azimuthSebenarnya = (targetTampak + deviasi) % 360;
+
+            qObj = {
+                id: `BAY-${i}`, kategori: katKompasShift,
+                pertanyaan: `[Soal ${i}] Sebuah kompas taktis mengalami disorientasi di mana jarum UTARA (0°) terputar dan menunjuk ke sudut ${deviasi}° dari posisi sebenarnya. Jika seorang anggota membaca suatu objek di arah Timur dial kompas (90°), berapakah sudut azimuth asli objek tersebut di lapangan?`,
+                visualHtml: generateShiftedCompassSVG(deviasi),
+                opsi: [`${azimuthSebenarnya}°`, `${(azimuthSebenarnya + 90) % 360}°`, `${(azimuthSebenarnya + 180) % 360}°`, `${(azimuthSebenarnya + 45) % 360}°`, `${(azimuthSebenarnya + 315) % 360}°`],
+                jawabanBenar: 0,
+                pembahasan: `Analisis Kompas Disorientasi:\n- Jarum Utara bergeser searah jarum jam sebesar ${deviasi}°.\n- Untuk mendapatkan azimuth sebenarnya di lapangan, tambahkan nilai pembacaan dial (${targetTampak}°) dengan nilai pergeseran kompas (${deviasi}°).\n- Azimuth Sebenarnya = ${targetTampak}° + ${deviasi}° = ${azimuthSebenarnya}°.`
+            };
+        } else {
+            // Tipe 3: Korelasi Jam Analog, Bayangan, dan Kompas
+            let jamSore = 14 + (i % 3); // 14.00, 15.00, 16.00
+            let angleSore = 90 + (jamSore - 6) * 15; // Sisi Barat
+            let arahByn = (angleSore + 180) % 360;
+
+            qObj = {
+                id: `BAY-${i}`, kategori: katJamKompas,
+                pertanyaan: `[Soal ${i}] Seorang personel bertugas di lapangan pada pukul ${jamSore}.00 sore tanpa membawa kompas. Dengan mengamati bayangan badannya sendiri yang terbentang ke arah azimuth ${arahByn}°, arah manakah yang berada tepat di belakang punggungnya jika ia berdiri menghadap ke ujung bayangannya?`,
+                visualHtml: generateSunShadowSVG(angleSore, 70),
+                opsi: ["Timur (Sisi Matahari)", "Barat", "Utara", "Selatan", "Barat Daya"],
+                jawabanBenar: 0,
+                pembahasan: `Analisis Orientasi Diri vs Bayangan:\n- Pukul ${jamSore}.00 sore, matahari berada di BARAT. Bayangan terbentang ke arah TIMUR (${arahByn}°).\n- Jika personel menghadap ke UJUNG BAYANGAN, berarti ia menghadap ke TIMUR.\n- Punggung personel tersebut secara otomatis menghadap ke BARAT (arah asal sinar matahari).`
+            };
+        }
+        rawBankSoal.push(qObj);
+    }
+
+    let bankSoal = [];
+    let currentQ = 0;
+    let userAnswers = {};
+    let timerInterval;
+
+    window.addEventListener('DOMContentLoaded', () => {
+        if (new Date().getTime() > EXPIRATION_DATE) {
+            alert("Masa berlaku modul tes ini telah berakhir. Silakan hubungi Persona Research & Consulting.");
+            document.body.innerHTML = "<h2 style='text-align:center; margin-top:50px; color:red;'>MODUL TERKUNCI / EXPIRED</h2>";
+            return;
+        }
+
+        // Auto-shuffle pilihan jawaban
+        bankSoal = rawBankSoal.map(q => {
+            let originalOps = [...q.opsi];
+            let correctText = originalOps[q.jawabanBenar];
+            
+            let shuffledOps = [...originalOps];
+            for (let i = shuffledOps.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffledOps[i], shuffledOps[j]] = [shuffledOps[j], shuffledOps[i]];
+            }
+            
+            let newCorrectIdx = shuffledOps.indexOf(correctText);
+            return {
+                ...q,
+                opsi: shuffledOps,
+                jawabanBenar: newCorrectIdx
+            };
+        });
+
+        renderNav();
+        loadQ(0);
+        startTimer(35 * 60);
+    });
+
+    function loadQ(idx) {
+        currentQ = idx;
+        const qData = bankSoal[idx];
+        document.getElementById('q-no').innerText = `Soal ${idx + 1} dari ${bankSoal.length}`;
+        document.getElementById('q-kat').innerText = qData.kategori;
+        document.getElementById('q-text').innerText = qData.pertanyaan;
+        document.getElementById('q-visual').innerHTML = qData.visualHtml;
+        
+        let html = '';
+        qData.opsi.forEach((opt, i) => {
+            const isSelected = userAnswers[idx] === i ? 'selected' : '';
+            html += `<div class="opt ${isSelected}" onclick="selectOpt(${i})">${String.fromCharCode(65+i)}. ${opt}</div>`;
+        });
+        document.getElementById('options').innerHTML = html;
+        document.getElementById('btn-next').innerText = idx === bankSoal.length - 1 ? "Selesai" : "Selanjutnya";
+        renderNav();
+    }
+
+    // AUTO-NEXT SETELAH MEMILIH OPSI
+    function selectOpt(optIdx) {
+        userAnswers[currentQ] = optIdx;
+        loadQ(currentQ);
+        setTimeout(() => { 
+            nextQ(); 
+        }, 250);
+    }
+
+    function renderNav() {
+        let html = '';
+        for(let i = 0; i < bankSoal.length; i++) {
+            let cls = 'nav-item';
+            if(userAnswers[i] !== undefined) cls += ' filled';
+            if(i === currentQ) cls += ' active';
+            html += `<div class="${cls}" onclick="loadQ(${i})">${i + 1}</div>`;
+        }
+        document.getElementById('navGrid').innerHTML = html;
+    }
+
+    function nextQ() {
+        if(currentQ === bankSoal.length - 1) {
+            if(confirm("Apakah Anda telah selesai mengerjakan seluruh 25 soal?")) finishTest();
+            return;
+        }
+        loadQ(currentQ + 1);
+    }
+
+    function prevQ() {
+        if(currentQ > 0) loadQ(currentQ - 1);
+    }
+
+    function startTimer(seconds) {
+        let t = seconds;
+        timerInterval = setInterval(() => {
+            let m = Math.floor(t / 60);
+            let s = t % 60;
+            document.getElementById('timer').innerText = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+            if(--t < 0) {
+                clearInterval(timerInterval);
+                finishTest();
+            }
+        }, 1000);
+    }
+
+    function finishTest() {
+        clearInterval(timerInterval);
+        document.getElementById('page-test').style.display = 'none';
+        document.getElementById('page-result').style.display = 'block';
+
+        let benar = 0;
+        let salah = 0;
+        let kosong = 0;
+        let katStats = {};
+
+        bankSoal.forEach((q, i) => {
+            if (!katStats[q.kategori]) {
+                katStats[q.kategori] = { total: 0, benar: 0 };
+            }
+            katStats[q.kategori].total++;
+
+            if (userAnswers[i] === undefined) {
+                kosong++;
+            } else if (userAnswers[i] === q.jawabanBenar) {
+                benar++;
+                katStats[q.kategori].benar++;
+            } else {
+                salah++;
+            }
+        });
+
+        const totalSoal = bankSoal.length;
+        const skor = (benar / totalSoal) * 100;
+        const persentase = skor;
+
+        document.getElementById('res-skor').innerText = `${skor.toFixed(0)} / 100`;
+        document.getElementById('res-persen').innerText = `${persentase.toFixed(0)}%`;
+        document.getElementById('res-detail').innerText = `${benar} Benar / ${salah} Salah / ${kosong} Kosong`;
+
+        let katHtml = '';
+        for (let kat in katStats) {
+            let p = (katStats[kat].benar / katStats[kat].total) * 100;
+            katHtml += `
+                <tr>
+                    <td><b>${kat}</b></td>
+                    <td>${katStats[kat].total}</td>
+                    <td>${katStats[kat].benar}</td>
+                    <td><b>${p.toFixed(0)}%</b></td>
+                </tr>
+            `;
+        }
+        document.querySelector('#table-kategori tbody').innerHTML = katHtml;
+
+        let saranText = '';
+        if (persentase >= 80) {
+            saranText = "<b>SANGAT MEMENUHI SYARAT (MS) HIGH SCORE!</b> Kemampuan Anda dalam menganalisis korelasi posisi matahari, proyeksi bayangan, dan orientasi kompas sangat tajam.";
+        } else if (persentase >= 60) {
+            saranText = "<b>MEMENUHI SYARAT (MS).</b> Pemahaman navigasi bayangan sudah baik, namun perhatikan orientasi sudut disorientasi kompas.";
+        } else {
+            saranText = "<b>TIDAK MEMENUHI SYARAT (TMS).</b> Diperlukan pemahaman mendalam terkait sifat bayangan yang selalu berlawanan 180° dari arah datangnya sinar matahari.";
+        }
+        document.getElementById('saran-box').innerHTML = saranText;
+
+        let pemHtml = '';
+        bankSoal.forEach((q, i) => {
+            let uAns = userAnswers[i];
+            let statusBadge = '';
+            let uAnsText = uAns !== undefined ? `${String.fromCharCode(65+uAns)}. ${q.opsi[uAns]}` : '<i>Tidak Dijawab</i>';
+            let cAnsText = `${String.fromCharCode(65+q.jawabanBenar)}. ${q.opsi[q.jawabanBenar]}`;
+
+            if (uAns === undefined) {
+                statusBadge = '<span class="badge-kosong">KOSONG</span>';
+            } else if (uAns === q.jawabanBenar) {
+                statusBadge = '<span class="badge-benar">BENAR</span>';
+            } else {
+                statusBadge = '<span class="badge-salah">SALAH</span>';
+            }
+
+            pemHtml += `
+                <div style="margin-bottom:20px; border-bottom:1px solid #e2e8f0; padding-bottom:15px;">
+                    <div style="font-weight:bold; color:var(--navy);">Soal ${i + 1} (${q.kategori}) - Status: ${statusBadge}</div>
+                    <div style="margin:8px 0; font-size:14.5px;">${q.pertanyaan}</div>
+                    <div class="visual-container" style="max-width:260px; margin:10px 0;">${q.visualHtml}</div>
+                    <div style="font-size:13.5px; color:#475569;">
+                        <div>Jawaban Anda: ${uAnsText}</div>
+                        <div>Jawaban Benar: <b>${cAnsText}</b></div>
+                    </div>
+                    <div class="pembahasan-box">
+                        <b>Analisis Pembahasan:</b><br>${q.pembahasan.replace(/\n/g, '<br>')}
+                    </div>
+                </div>
+            `;
+        });
+        document.getElementById('pembahasan-container').innerHTML = pemHtml;
+        window.scrollTo(0,0);
+    }
+</script>
+</body>
+</html>

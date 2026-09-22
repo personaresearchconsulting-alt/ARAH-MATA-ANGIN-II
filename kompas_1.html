@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PERSONA RESEARCH & CONSULTING - Tes Penalaran Arah (Set Visual Gambar)</title>
+    <style>
+        :root { --navy: #0b2340; --gold: #d4a017; --bg: #f8fafc; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: var(--bg); color: #1e293b; -webkit-user-select: none; user-select: none; }
+        header { background: var(--navy); color: white; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid var(--gold); }
+        .container { max-width: 950px; margin: 20px auto; padding: 0 15px; }
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .opt { padding: 14px; margin: 8px 0; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+        .opt:hover { background: #f1f5f9; border-color: var(--navy); }
+        .opt.selected { background: #e0f2fe; border-color: var(--navy); font-weight: bold; }
+        .nav-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 15px; }
+        .nav-item { height: 38px; display: flex; align-items: center; justify-content: center; border: 1px solid #cbd5e1; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold; }
+        .nav-item.filled { background: var(--navy); color: white; }
+        .nav-item.active { border: 2px solid var(--gold); }
+        .btn { background: var(--navy); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .btn:hover { opacity: 0.9; }
+        .btn-gold { background: var(--gold); color: var(--navy); }
+        #timer { font-size: 20px; font-weight: bold; color: var(--gold); font-family: monospace; }
+        
+        .rekap-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
+        .rekap-table th, .rekap-table td { border: 1px solid #cbd5e1; padding: 8px 12px; text-align: left; }
+        .rekap-table th { background-color: var(--navy); color: white; }
+        .badge-benar { color: #16a34a; font-weight: bold; }
+        .badge-salah { color: #dc2626; font-weight: bold; }
+        .badge-kosong { color: #d97706; font-weight: bold; }
+        .pembahasan-box { background: #f1f5f9; border-left: 4px solid var(--navy); padding: 12px; margin-top: 10px; font-size: 13.5px; border-radius: 0 6px 6px 0; }
+        .svg-container { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; text-align: center; margin: 15px 0; }
+        
+        @media print {
+            header, .no-print, button { display: none !important; }
+            body { background: white; color: black; -webkit-user-select: auto; user-select: auto; }
+            .container { max-width: 100%; margin: 0; padding: 0; }
+            .card { box-shadow: none; border: 1px solid #ccc; }
+        }
+    </style>
+</head>
+<body oncontextmenu="return false" onkeydown="return false">
+
+<div class="container">
+    <header>
+        <div>
+            <b>PERSONA RESEARCH & CONSULTING</b> | TES PENALARAN ARAH (SET VISUAL GAMBAR)
+            <div style="font-size: 11px; font-weight: normal; color: #cbd5e1;">Simulasi Spasial Visual - Persiapan Seleksi POLRI | WA: 0877 425 5786</div>
+        </div>
+        <div id="timer">30:00</div>
+    </header>
+
+    <!-- Halaman Pengerjaan Soal -->
+    <div id="page-test" style="margin-top:20px;">
+        <div style="display:flex; gap:20px; flex-wrap:wrap;">
+            <div style="flex:3; min-width:280px;">
+                <div class="card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                        <div id="q-no" style="font-weight:bold; color:var(--navy);">Soal 1 dari 25</div>
+                        <div id="q-kat" style="font-size:12px; background:#e0f2fe; color:var(--navy); padding:3px 8px; border-radius:4px; font-weight:600;">Visual Spasial</div>
+                    </div>
+                    <div id="q-text" style="font-size:15px; line-height:1.6; margin-bottom:15px;"></div>
+                    <div id="q-svg" class="svg-container"></div>
+                    <div id="options"></div>
+                    <div style="margin-top:25px; display:flex; justify-content:space-between;">
+                        <button class="btn" onclick="prevQ()" style="background:#64748b">Sebelumnya</button>
+                        <button class="btn" id="btn-next" onclick="nextQ()">Selanjutnya</button>
+                    </div>
+                </div>
+            </div>
+
+            <div style="flex:1; min-width:220px;">
+                <div class="card" style="padding:15px;">
+                    <div style="text-align:center; font-size:12px; font-weight:bold; margin-bottom:10px; color:var(--navy);">NAVIGASI SOAL</div>
+                    <div id="navGrid" class="nav-grid"></div>
+                    <div style="margin-top:20px; text-align:center;">
+                        <!-- Kompas Acuan Tetap -->
+                        <div style="font-size:11px; font-weight:bold; color:#64748b; margin-bottom:5px;">PANDUAN MATA ANGIN</div>
+                        <svg width="120" height="120" viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" r="42" fill="none" stroke="#0b2340" stroke-width="2"/>
+                            <line x1="50" y1="10" x2="50" y2="90" stroke="#cbd5e1" stroke-width="1"/>
+                            <line x1="10" y1="50" x2="90" y2="50" stroke="#cbd5e1" stroke-width="1"/>
+                            <polygon points="50,12 54,48 50,50 46,48" fill="#dc2626"/>
+                            <text x="50" y="9" font-size="9" font-weight="bold" fill="#dc2626" text-anchor="middle">U</text>
+                            <text x="50" y="99" font-size="9" font-weight="bold" fill="#0b2340" text-anchor="middle">S</text>
+                            <text x="96" y="53" font-size="9" font-weight="bold" fill="#0b2340" text-anchor="middle">T</text>
+                            <text x="4" y="53" font-size="9" font-weight="bold" fill="#0b2340" text-anchor="middle">B</text>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Halaman Hasil & Pembahasan -->
+    <div id="page-result" style="display:none; margin-top:20px;">
+        <div class="card">
+            <h2 style="color:var(--navy); border-bottom:2px solid var(--gold); padding-bottom:10px; margin-top:0;">HASIL TES PENALARAN ARAH (SET VISUAL GAMBAR)</h2>
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:15px; margin:20px 0;">
+                <div style="background:#f1f5f9; padding:12px; border-radius:8px; text-align:center;">
+                    <div style="font-size:12px; color:#64748b;">SKOR AKHIR</div>
+                    <div id="res-skor" style="font-size:22px; font-weight:bold; color:var(--navy);">-</div>
+                </div>
+                <div style="background:#f1f5f9; padding:12px; border-radius:8px; text-align:center;">
+                    <div style="font-size:12px; color:#64748b;">PERSENTASE</div>
+                    <div id="res-persen" style="font-size:22px; font-weight:bold; color:var(--navy);">-</div>
+                </div>
+                <div style="background:#f1f5f9; padding:12px; border-radius:8px; text-align:center;">
+                    <div style="font-size:12px; color:#64748b;">BENAR / SALAH / KOSONG</div>
+                    <div id="res-detail" style="font-size:16px; font-weight:bold; color:var(--navy);">-</div>
+                </div>
+            </div>
+
+            <button class="btn btn-gold no-print" onclick="window.print()" style="width:100%; margin-bottom:20px; font-size:15px;">DOWNLOAD / PRINT HASIL PDF</button>
+
+            <h3 style="color:var(--navy); margin-top:25px;">SARAN & EVALUASI SPASIAL</h3>
+            <div id="saran-box" class="pembahasan-box" style="border-left-color:var(--gold);"></div>
+
+            <h3 style="color:var(--navy); margin-top:25px;">REKAP JAWABAN & PEMBAHASAN LENGKAP</h3>
+            <div id="pembahasan-container"></div>
+
+            <div style="margin-top:20px;" class="no-print">
+                <button class="btn" onclick="location.reload()" style="width:100%; padding:12px;">ULANGI TES VISUAL</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const EXPIRATION_DATE = "2026-12-31";
+
+    const rawBankSoal = [
+        {
+            id: "V-01", kategori: "Visual Rotasi Kompas",
+            pertanyaan: "Perhatikan gambar jarum kompas berikut. Jika jarum penunjuk berputar 90° searah jarum jam, ke arah manakah jarum tersebut menunjuk sekarang?",
+            svg: `<svg width="200" height="150" viewBox="0 0 200 150">
+                    <circle cx="100" cy="75" r="55" fill="none" stroke="#0b2340" stroke-width="2"/>
+                    <line x1="100" y1="20" x2="100" y2="130" stroke="#e2e8f0"/>
+                    <line x1="45" y1="75" x2="155" y2="75" stroke="#e2e8f0"/>
+                    <text x="100" y="16" font-size="10" font-weight="bold" fill="#dc2626" text-anchor="middle">U</text>
+                    <text x="100" y="142" font-size="10" font-weight="bold" fill="#0b2340" text-anchor="middle">S</text>
+                    <text x="162" y="78" font-size="10" font-weight="bold" fill="#0b2340" text-anchor="middle">T</text>
+                    <text x="38" y="78" font-size="10" font-weight="bold" fill="#0b2340" text-anchor="middle">B</text>
+                    <polygon points="100,25 106,75 100,75" fill="#dc2626"/>
+                    <polygon points="100,25 94,75 100,75" fill="#ef4444"/>
+                  </svg>`,
+            opsi: ["Timur", "Selatan", "Barat", "Tenggara", "Barat Laut"],
+            jawabanBenar: 0,
+            pembahasan: "Awalnya jarum menunjuk ke arah Utara (0°). Diputar 90° searah jarum jam (+90°) membuat jarum mengarah tepat ke arah Timur."
+        },
+        {
+            id: "V-02", kategori: "Visual Vektor Pergerakan",
+            pertanyaan: "Berdasarkan diagram pergerakan mobil patroli dari titik A ke titik B di bawah ini, berapakah jarak garis lurus dari titik awal A ke titik B?",
+            svg: `<svg width="220" height="140" viewBox="0 0 220 140">
+                    <path d="M 40,100 L 160,100 L 160,20" fill="none" stroke="#0b2340" stroke-width="3" stroke-dasharray="4"/>
+                    <circle cx="40" cy="100" r="6" fill="#16a34a"/>
+                    <text x="30" y="120" font-size="11" font-weight="bold" fill="#16a34a">A (Start)</text>
+                    <circle cx="160" cy="20" r="6" fill="#dc2626"/>
+                    <text x="170" y="25" font-size="11" font-weight="bold" fill="#dc2626">B (Finish)</text>
+                    <text x="100" y="115" font-size="11" font-weight="bold" fill="#475569">12 km (Timur)</text>
+                    <text x="165" y="65" font-size="11" font-weight="bold" fill="#475569">9 km (Utara)</text>
+                  </svg>`,
+            opsi: ["15 km", "21 km", "18 km", "13 km", "25 km"],
+            jawabanBenar: 0,
+            pembahasan: "Menggunakan Teorema Pythagoras: Jarak = √(12² + 9²) = √(144 + 81) = √225 = 15 km."
+        },
+        {
+            id: "V-03", kategori: "Visual Posisi Relatif Denah",
+            pertanyaan: "Perhatikan peta posisi pos jaga berikut. Posisi Pos B jika dilihat dari lokasi Pos C adalah berarah...",
+            svg: `<svg width="200" height="150" viewBox="0 0 200 150">
+                    <rect x="20" y="20" width="160" height="110" fill="none" stroke="#e2e8f0" stroke-dasharray="2"/>
+                    <circle cx="50" cy="40" r="8" fill="#0b2340"/><text x="63" y="44" font-size="11" font-weight="bold">Pos A</text>
+                    <circle cx="150" cy="40" r="8" fill="#0b2340"/><text x="163" y="44" font-size="11" font-weight="bold">Pos B</text>
+                    <circle cx="150" cy="110" r="8" fill="#d4a017"/><text x="163" y="114" font-size="11" font-weight="bold">Pos C</text>
+                  </svg>`,
+            opsi: ["Utara", "Selatan", "Barat", "Timur", "Barat Daya"],
+            jawabanBenar: 0,
+            pembahasan: "Pos B berada sejajar vertikal di atas Pos C. Maka posisi Pos B dari sudut pandang Pos C adalah di sebelah Utara."
+        },
+        {
+            id: "V-04", kategori: "Visual Vektor Pergerakan",
+            pertanyaan: "Diagram berikut memperlihatkan pergerakan regu dari titik O ke titik X. Ke arah manakah regu harus melangkah dari X untuk kembali langsung ke titik O?",
+            svg: `<svg width="200" height="140" viewBox="0 0 200 140">
+                    <path d="M 120,110 L 40,110 L 40,40" fill="none" stroke="#0b2340" stroke-width="3"/>
+                    <circle cx="120" cy="110" r="6" fill="#16a34a"/><text x="125" y="125" font-size="11" font-weight="bold" fill="#16a34a">O</text>
+                    <circle cx="40" cy="40" r="6" fill="#dc2626"/><text x="30" y="30" font-size="11" font-weight="bold" fill="#dc2626">X</text>
+                    <text x="70" y="125" font-size="10" fill="#64748b">Barat</text>
+                    <text x="15" y="80" font-size="10" fill="#64748b">Utara</text>
+                  </svg>`,
+            opsi: ["Tenggara", "Barat Daya", "Timur Laut", "Barat Laut", "Selatan"],
+            jawabanBenar: 0,
+            pembahasan: "Titik X berada di sebelah Barat Laut dari O. Untuk kembali dari X ke O, arah pergerakan harus menuju ke Tenggara (kanan-bawah)."
+        },
+        {
+            id: "V-05", kategori: "Visual Rotasi Kompas",
+            pertanyaan: "Jarum radar menunjukkan arah Barat Daya (BD). Jika radar melakukan rotasi 180°, arah yang ditunjuk sekarang adalah...",
+            svg: `<svg width="200" height="140" viewBox="0 0 200 140">
+                    <circle cx="100" cy="70" r="50" fill="none" stroke="#0b2340" stroke-width="2"/>
+                    <line x1="65" y1="105" x2="100" y2="70" stroke="#dc2626" stroke-width="4"/>
+                    <circle cx="100" cy="70" r="4" fill="#0b2340"/>
+                    <text x="50" y="120" font-size="10" font-weight="bold" fill="#dc2626">BD</text>
+                  </svg>`,
+            opsi: ["Timur Laut", "Barat Laut", "Tenggara", "Utara", "Selatan"],
+            jawabanBenar: 0,
+            pembahasan: "Rotasi 180° membalikkan arah secara berlawanan linier. Kebalikan dari Barat Daya adalah Timur Laut."
+        },
+        {
+            id: "V-06", kategori: "Visual Posisi Relatif Denah",
+            pertanyaan: "Perhatikan tata letak bangunan berikut. Di manakah posisi Gedung Patroli relatif terhadap Gedung Utama?",
+            svg: `<svg width="220" height="130" viewBox="0 0 220 130">
+                    <rect x="30" y="70" width="60" height="40" fill="#0b2340"/><text x="33" y="94" font-size="9" fill="#fff" font-weight="bold">Utama</text>
+                    <rect x="130" y="20" width="60" height="40" fill="#d4a017"/><text x="133" y="44" font-size="9" fill="#fff" font-weight="bold">Patroli</text>
+                  </svg>`,
+            opsi: ["Timur Laut", "Barat Daya", "Barat Laut", "Tenggara", "Utara"],
+            jawabanBenar: 0,
+            pembahasan: "Gedung Patroli terletak di sebelah kanan (Timur) dan atas (Utara) dari Gedung Utama, sehingga posisinya adalah di Timur Laut."
+        },
+        {
+            id: "V-07", kategori: "Visual Vektor Pergerakan",
+            pertanyaan: "Perhatikan rute tertutup berikut: A -> B -> C -> A. Jika A ke B adalah 8 m ke Timur, dan B ke C adalah 6 m ke Utara, berapakah panjang lintasan C kembali ke A?",
+            svg: `<svg width="200" height="130" viewBox="0 0 200 130">
+                    <polygon points="40,100 140,100 140,25" fill="none" stroke="#0b2340" stroke-width="2" stroke-dasharray="3"/>
+                    <text x="35" y="115" font-size="10" font-weight="bold">A</text>
+                    <text x="145" y="115" font-size="10" font-weight="bold">B</text>
+                    <text x="145" y="20" font-size="10" font-weight="bold">C</text>
+                  </svg>`,
+            opsi: ["10 meter", "14 meter", "12 meter", "8 meter", "16 meter"],
+            jawabanBenar: 0,
+            pembahasan: "Sisi miring C ke A = √(8² + 6²) = √(64 + 36) = √100 = 10 meter."
+        },
+        {
+            id: "V-08", kategori: "Visual Rotasi Kompas",
+            pertanyaan: "Jarum penunjuk semula menghadap ke Utara (0°). Setelah berputar 135° searah jarum jam, jarum akan menunjuk ke arah...",
+            svg: `<svg width="180" height="140" viewBox="0 0 180 140">
+                    <circle cx="90" cy="70" r="45" fill="none" stroke="#0b2340" stroke-width="2"/>
+                    <path d="M 90,25 A 45 45 0 0 1 122,102" fill="none" stroke="#d4a017" stroke-width="2" marker-end="url(#arrow)"/>
+                    <line x1="90" y1="70" x2="90" y2="25" stroke="#dc2626" stroke-width="3"/>
+                    <text x="90" y="18" font-size="9" font-weight="bold" fill="#dc2626" text-anchor="middle">U</text>
+                  </svg>`,
+            opsi: ["Tenggara", "Barat Daya", "Timur Laut", "Barat Laut", "Selatan"],
+            jawabanBenar: 0,
+            pembahasan: "Utara (0°) + 135° searah jarum jam = 135°, yaitu arah Tenggara."
+        },
+        {
+            id: "V-09", kategori: "Visual Posisi Relatif Denah",
+            pertanyaan: "Berdasarkan denah pangkalan di bawah, kapal di Dermaga X ingin bergerak langsung ke Dermaga Y. Ke arah manakah kapal harus dikemudikan?",
+            svg: `<svg width="220" height="130" viewBox="0 0 220 130">
+                    <rect x="30" y="20" width="50" height="35" fill="#0b2340"/><text x="38" y="42" font-size="10" fill="#fff" font-weight="bold">Dermaga X</text>
+                    <rect x="140" y="75" width="50" height="35" fill="#16a34a"/><text x="148" y="97" font-size="10" fill="#fff" font-weight="bold">Dermaga Y</text>
+                  </svg>`,
+            opsi: ["Tenggara", "Barat Laut", "Timur Laut", "Barat Daya", "Selatan"],
+            jawabanBenar: 0,
+            pembahasan: "Dermaga Y berada di kanan-bawah dari Dermaga X. Arah kanan-bawah sesuai acuan kompas adalah Tenggara."
+        },
+        {
+            id: "V-10", kategori: "Visual Vektor Pergerakan",
+            pertanyaan: "Seorang personel berjalan sesuai garis kurva berikut: 10m ke Barat, lalu 10m ke Selatan. Berapa besar sudut arah posisi akhir dari titik start terhadap arah Barat?",
+            svg: `<svg width="200" height="130" viewBox="0 0 200 130">
+                    <path d="M 150,30 L 50,30 L 50,110" fill="none" stroke="#0b2340" stroke-width="3"/>
+                    <circle cx="150" cy="30" r="5" fill="#16a34a"/><text x="155" y="25" font-size="10" font-weight="bold">Start</text>
+                    <circle cx="50" cy="110" r="5" fill="#dc2626"/><text x="20" y="125" font-size="10" font-weight="bold">Finish</text>
+                  </svg>`,
+            opsi: ["45 derajat (Barat Daya)", "90 derajat", "30 derajat", "60 derajat", "0 derajat"],
+            jawabanBenar: 0,
+            pembahasan: "Karena jarak ke Barat (10m) dan ke Selatan (10m) sama panjang, maka membentuk segitiga siku-siku sama kaki dengan sudut 45° menuju Barat Daya."
+        },
+        {
+            id: "V-11", kategori: "Visual Rotasi Kompas",
+            pertanyaan: "Arah pandang drone semula ke Barat Laut. Jika diputar 90° berlawanan arah jarum jam, arah drone sekarang adalah...",
+            opsi: ["Barat Daya", "Tenggara", "Timur Laut", "Utara", "Selatan"],
+            svg: `<svg width="180" height="130" viewBox="0 0 180 130">
+                    <circle cx="90" cy="65" r="45" fill="none" stroke="#0b2340" stroke-width="2"/>
+                    <line x1="90" y1="65" x2="58" y2="33" stroke="#dc2626" stroke-width="3"/>
+                    <text x="48" y="28" font-size="9" font-weight="bold" fill="#dc2626">BL</text>
+                  </svg>`,
+            jawabanBenar: 0,
+            pembahasan: "Barat Laut (315°). Berputar 90° berlawanan jarum jam (-90°) = 225°, yaitu arah Barat Daya."
+        },
+        {
+            id: "V-12", kategori: "Visual Posisi Relatif Denah",
+            pertanyaan: "Pada denah pos militer berikut, objek apakah yang berada tepat di sebelah Barat Laut Pos Komando?",
+            svg: `<svg width="220" height="140" viewBox="0 0 220 140">
+                    <circle cx="110" cy="80" r="12" fill="#0b2340"/><text x="90" y="110" font-size="9" font-weight="bold">Pos Komando</text>
+                    <circle cx="40" cy="30" r="10" fill="#dc2626"/><text x="35" y="28" font-size="8" fill="#fff" font-weight="bold">A</text>
+                    <circle cx="180" cy="30" r="10" fill="#16a34a"/><text x="175" y="28" font-size="8" fill="#fff" font-weight="bold">B</text>
+                    <circle cx="180" cy="120" r="10" fill="#d4a017"/><text x="175" y="118" font-size="8" fill="#fff" font-weight="bold">C</text>
+                  </svg>`,
+            opsi: ["Objek A", "Objek B", "Objek C", "Tidak ada objek", "Semua objek"],
+            jawabanBenar: 0,
+            pembahasan: "Objek A berada di posisi kiri-atas relatif terhadap Pos Komando, yang merupakan arah Barat Laut."
+        },
+        {
+            id: "V-13", kategori: "Visual Vektor Pergerakan",
+            pertanyaan: "Diagram memperlihatkan pergerakan: 20 km ke Utara, lalu 20 km ke Timur. Berapakah arah sudut posisi akhir dari titik start?",
+            svg: `<svg width="200" height="130" viewBox="0 0 200 130">
+                    <path d="M 40,110 L 40,30 L 140,30" fill="none" stroke="#0b2340" stroke-width="3"/>
+                    <circle cx="40" cy="110" r="5" fill="#16a34a"/>
+                    <circle cx="140" cy="30" r="5" fill="#dc2626"/>
+                  </svg>`,
+            opsi: ["Timur Laut", "Tenggara", "Barat Daya", "Barat Laut", "Utara"],
+            jawabanBenar: 0,
+            pembahasan: "Pergerakan kombinasi Utara + Timur menempatkan posisi akhir di kuadran Timur Laut."
+        },
+        {
+            id: "V-14", kategori: "Visual Rotasi Kompas",
+            pertanyaan: "Jarum indikator menunjuk ke arah Timur. Setelah diputar 270° searah jarum jam, arah jarum indikator adalah...",
+            svg: `<svg width="180" height="130" viewBox="0 0 180 130">
+                    <circle cx="90" cy="65" r="45" fill="none" stroke="#0b2340" stroke-width="2"/>
+                    <line x1="90" y1="65" x2="135" y2="65" stroke="#dc2626" stroke-width="3"/>
+                    <text x="142" y="68" font-size="9" font-weight="bold" fill="#dc2626">T</text>
+                  </svg>`,
+            opsi: ["Utara", "Selatan", "Barat", "Timur Laut", "Tenggara"],
+            jawabanBenar: 0,
+            pembahasan: "Timur (90°). +270° searah jarum jam = 360° (kembali ke Utara)."
+        },
+        {
+            id: "V-15", kategori: "Visual Posisi Relatif Denah",
+            pertanyaan: "Arah garis lurus dari Pos 1 ke Pos 2 pada peta grid sederhana berikut adalah...",
+            svg: `<svg width="200" height="120" viewBox="0 0 200 120">
+                    <line x1="30" y1="90" x2="170" y2="30" stroke="#0b2340" stroke-width="2" stroke-dasharray="4"/>
+                    <circle cx="30" cy="90" r="6" fill="#0b2340"/><text x="15" y="110" font-size="10" font-weight="bold">Pos 1</text>
+                    <circle cx="170" cy="30" r="6" fill="#d4a017"/><text x="160" y="20" font-size="10" font-weight="bold">Pos 2</text>
+                  </svg>`,
+            opsi: ["Timur Laut", "Barat Daya", "Tenggara", "Barat Laut", "Timur"],
+            jawabanBenar: 0,
+            pembahasan: "Garis bergerak naik ke kanan dari Pos 1 ke Pos 2, yang berarti menuju arah Timur Laut."
+        },
+        {
+            id: "V-16", kategori: "Visual Vektor Pergerakan",
+            pertanyaan: "Sebuah kapal bergerak 15 mil ke Selatan, lalu 15 mil ke Barat. Diagram manakah yang secara tepat menggambarkan posisi akhir (F) dari titik awal (S)?",
+            svg: `<svg width="200" height="130" viewBox="0 0 200 130">
+                    <path d="M 140,25 L 140,95 L 70,95" fill="none" stroke="#0b2340" stroke-width="3"/>
+                    <circle cx="140" cy="25" r="5" fill="#16a34a"/><text x="148" y="25" font-size="10" font-weight="bold">S</text>
+                    <circle cx="70" cy="95" r="5" fill="#dc2626"/><text x="55" y="110" font-size="10" font-weight="bold">F</text>
+                  </svg>`,
+            opsi: ["Barat Daya dari S", "Timur Laut dari S", "Tenggara dari S", "Barat Laut dari S", "Selatan dari S"],
+            jawabanBenar: 0,
+            pembahasan: "Posisi F berada di kiri-bawah relatif terhadap S, yaitu arah Barat Daya."
+        },
+        {
+            id: "V-17", kategori: "Visual Rotasi Kompas",
+            pertanyaan: "Jarum kompas menunjuk arah Tenggara. Jika diputar 180°, jarum akan mengarah ke...",
+            svg: `<svg width="180" height="130" viewBox="0 0 180 130">
+                    <circle cx="90" cy="65" r="45" fill="none" stroke="#0b2340" stroke-width="2"/>
+                    <line x1="90" y1="65" x2="122" y2="97" stroke="#dc2626" stroke-width="3"/>
+                    <text x="128" y="108" font-size="9" font-weight="bold" fill="#dc2626">TG</text>
+                  </svg>`,
+            opsi: ["Barat Laut", "Timur Laut", "Barat Daya", "Utara", "Selatan"],
+            jawabanBenar: 0,
+            pembahasan: "Kebalikan lurus (180°) dari Tenggara adalah Barat Laut."
+        },
+        {
+            id: "V-18", kategori: "Visual Posisi Relatif Denah",
+            pertanyaan: "Berdasarkan diagram posisi berikut, jika Anda berdiri di Titik Z dan menghadap ke Titik W, Anda sedang menghadap ke arah...",
+            svg: `<svg width="200" height="130" viewBox="0 0 200 130">
+                    <circle cx="50" cy="95" r="7" fill="#0b2340"/><text x="35" y="115" font-size="10" font-weight="bold">Titik Z</text>
+                    <circle cx="150" cy="25" r="7" fill="#dc2626"/><text x="155" y="20" font-size="10" font-weight="bold">Titik W</text>
+                    <line x1="50" y1="95" x2="150" y2="25" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="3"/>
+                  </svg>`,
+            opsi: ["Timur Laut", "Barat Daya", "Tenggara", "Barat Laut", "Utara"],
+            jawabanBenar: 0,
+            pembahasan: "Melihat dari Z menuju W artinya melihat ke arah kanan-atas, yaitu Timur Laut."
+        },
+        {
+            id: "V-19", kategori: "Visual Vektor Pergerakan",
+            pertanyaan: "Perhatikan rute pergerakan: 30m ke Timur, 10m ke Selatan, 30m ke Barat. Posisi akhir relatif dari titik awal adalah...",
+            svg: `<svg width="220" height="120" viewBox="0 0 220 120">
+                    <path d="M 40,30 L 170,30 L 170,80 L 40,80" fill="none" stroke="#0b2340" stroke-width="3"/>
+                    <circle cx="40" cy="30" r="5" fill="#16a34a"/><text x="20" y="30" font-size="10" font-weight="bold">Start</text>
+                    <circle cx="40" cy="80" r="5" fill="#dc2626"/><text x="15" y="95" font-size="10" font-weight="bold">Finish</text>
+                  </svg>`,
+            opsi: ["10 meter ke Selatan", "10 meter ke Utara", "30 meter ke Timur", "Tepat di titik start", "20 meter ke Barat"],
+            jawabanBenar: 0,
+            pembahasan: "Sumbu X saling meniadakan (30m Timur - 30m Barat = 0). Tersisa pergerakan 10m ke Selatan."
+        },
+        {
+            id: "V-20", kategori: "Visual Rotasi Kompas",
+            pertanyaan: "Kompas menunjuk arah Selatan. Berputar 45° berlawanan arah jarum jam. Arah baru kompas adalah...",
+            svg: `<svg width="180" height="130" viewBox="0 0 180 130">
+                    <circle cx="90" cy="65" r="45" fill="none" stroke="#0b2340" stroke-width="2"/>
+                    <line x1="90" y1="65" x2="90" y2="110" stroke="#dc2626" stroke-width="3"/>
+                    <text x="90" y="123" font-size="9" font-weight="bold" fill="#dc2626" text-anchor="middle">S</text>
+                  </svg>`,
+            opsi: ["Tenggara", "Barat Daya", "Timur Laut", "Barat Laut", "Timur"],
+            jawabanBenar: 0,
+            pembahasan: "Selatan (180°). Berputar 45° berlawanan jarum jam (-45°) = 135°, yaitu arah Tenggara."
+        },
+        {
+            id: "V-21", kategori: "Visual Posisi Relatif Denah",
+            pertanyaan: "Di manakah posisi Helipad relatif terhadap Menara Pengawas pada denah berikut?",
+            svg: `<svg width="200" height="130" viewBox="0 0 200 130">
+                    <rect x="130" y="20" width="50" height="35" fill="#0b2340"/><text x="133" y="42" font-size="8" fill="#fff" font-weight="bold">Menara</text>
+                    <circle cx="50" cy="95" r="18" fill="#d4a017"/><text x="44" y="99" font-size="10" fill="#fff" font-weight="bold">H</text>
+                  </svg>`,
+            opsi: ["Barat Daya", "Timur Laut", "Tenggara", "Barat Laut", "Utara"],
+            jawabanBenar: 0,
+            pembahasan: "Helipad (H) berada di sebelah kiri-bawah dari Menara Pengawas, yaitu arah Barat Daya."
+        },
+        {
+            id: "V-22", kategori: "Visual Vektor Pergerakan",
+            pertanyaan: "Berapakah jarak perpindahan total langsung dari Start ke Finish pada lintasan siku-siku 16m (Utara) dan 12m (Timur)?",
+            svg: `<svg width="200" height="130" viewBox="0 0 200 130">
+                    <path d="M 40,110 L 40,30 L 130,30" fill="none" stroke="#0b2340" stroke-width="3"/>
+                    <circle cx="40" cy="110" r="5" fill="#16a34a"/>
+                    <circle cx="130" cy="30" r="5" fill="#dc2626"/>
+                    <text x="15" y="70" font-size="10">16m</text>
+                    <text x="75" y="20" font-size="10">12m</text>
+                  </svg>`,
+            opsi: ["20 meter", "28 meter", "24 meter", "18 meter", "25 meter"],
+            jawabanBenar: 0,
+            pembahasan: "Jarak lurus = √(16² + 12²) = √(256 + 144) = √400 = 20 meter."
+        },
+        {
+            id: "V-23", kategori: "Visual Rotasi Kompas",
+            pertanyaan: "Jarum penunjuk menghadap Barat (270°). Diputar 135° searah jarum jam. Arah akhir penunjuk adalah...",
+            svg: `<svg width="180" height="130" viewBox="0 0 180 130">
+                    <circle cx="90" cy="65" r="45" fill="none" stroke="#0b2340" stroke-width="2"/>
+                    <line x1="90" y1="65" x2="45" y2="65" stroke="#dc2626" stroke-width="3"/>
+                    <text x="35" y="68" font-size="9" font-weight="bold" fill="#dc2626">B</text>
+                  </svg>`,
+            opsi: ["Timur Laut", "Barat Daya", "Tenggara", "Barat Laut", "Utara"],
+            jawabanBenar: 0,
+            pembahasan: "Barat (270°). +135° searah jarum jam = 405° - 360° = 45°, yaitu arah Timur Laut."
+        },
+        {
+            id: "V-24", kategori: "Visual Posisi Relatif Denah",
+            pertanyaan: "Perhatikan susunan 3 titik A, B, dan C. Arah Titik C dari Titik A adalah...",
+            svg: `<svg width="200" height="130" viewBox="0 0 200 130">
+                    <circle cx="40" cy="30" r="6" fill="#0b2340"/><text x="30" y="20" font-size="10" font-weight="bold">A</text>
+                    <circle cx="140" cy="30" r="6" fill="#0b2340"/><text x="150" y="20" font-size="10" font-weight="bold">B</text>
+                    <circle cx="140" cy="100" r="6" fill="#dc2626"/><text x="150" y="110" font-size="10" font-weight="bold">C</text>
+                  </svg>`,
+            opsi: ["Tenggara", "Barat Laut", "Timur Laut", "Barat Daya", "Selatan"],
+            jawabanBenar: 0,
+            pembahasan: "Titik C berada di kanan-bawah dari Titik A, yang menunjukkan arah Tenggara."
+        },
+        {
+            id: "V-25", kategori: "Visual Vektor Pergerakan",
+            pertanyaan: "Berdasarkan diagram lintasan berikut, jika objek bergerak dari P ke Q lalu ke R, berapakah posisi R relatif terhadap P?",
+            svg: `<svg width="220" height="120" viewBox="0 0 220 120">
+                    <path d="M 40,90 L 160,90 L 160,30" fill="none" stroke="#0b2340" stroke-width="3"/>
+                    <circle cx="40" cy="90" r="5" fill="#16a34a"/><text x="30" y="110" font-size="10" font-weight="bold">P</text>
+                    <circle cx="160" cy="90" r="5" fill="#0b2340"/><text x="170" y="110" font-size="10" font-weight="bold">Q</text>
+                    <circle cx="160" cy="30" r="5" fill="#dc2626"/><text x="170" y="25" font-size="10" font-weight="bold">R</text>
+                  </svg>`,
+            opsi: ["Timur Laut", "Barat Daya", "Tenggara", "Barat Laut", "Utara"],
+            jawabanBenar: 0,
+            pembahasan: "Dari P (kiri-bawah) menuju R (kanan-atas), arah posisinya adalah Timur Laut."
+        }
+    ];
+
+    let bankSoal = [];
+    let currentQ = 0;
+    let userAnswers = {};
+    let timerInterval;
+
+    window.addEventListener('DOMContentLoaded', () => {
+        const today = new Date().toISOString().split('T')[0];
+        if (today > EXPIRATION_DATE) {
+            document.body.innerHTML = "<div style='text-align:center; padding:50px; font-family:sans-serif;'><h2>Masa berlaku tes ini telah berakhir (Expired).</h2><p>Silakan hubungi Persona Research & Consulting (WA: 0877 425 5786) untuk pembaruan modul.</p></div>";
+            return;
+        }
+
+        // Auto-shuffle opsi jawaban per soal
+        bankSoal = rawBankSoal.map(q => {
+            let originalOps = [...q.opsi];
+            let correctText = originalOps[q.jawabanBenar];
+            
+            let shuffledOps = [...originalOps];
+            for (let i = shuffledOps.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffledOps[i], shuffledOps[j]] = [shuffledOps[j], shuffledOps[i]];
+            }
+            
+            let newCorrectIdx = shuffledOps.indexOf(correctText);
+            return {
+                ...q,
+                opsi: shuffledOps,
+                jawabanBenar: newCorrectIdx
+            };
+        });
+
+        renderNav();
+        loadQ(0);
+        startTimer(30 * 60); // 30 Menit untuk 25 Soal Visual
+    });
+
+    function loadQ(idx) {
+        currentQ = idx;
+        const qData = bankSoal[idx];
+        document.getElementById('q-no').innerText = `Soal ${idx + 1} dari ${bankSoal.length}`;
+        document.getElementById('q-kat').innerText = qData.kategori;
+        document.getElementById('q-text').innerText = qData.pertanyaan;
+        document.getElementById('q-svg').innerHTML = qData.svg;
+        
+        let html = '';
+        qData.opsi.forEach((opt, i) => {
+            const isSelected = userAnswers[idx] === i ? 'selected' : '';
+            html += `<div class="opt ${isSelected}" onclick="selectOpt(${i})">${String.fromCharCode(65+i)}. ${opt}</div>`;
+        });
+        document.getElementById('options').innerHTML = html;
+        document.getElementById('btn-next').innerText = idx === bankSoal.length - 1 ? "Selesai" : "Selanjutnya";
+        renderNav();
+    }
+
+    function selectOpt(optIdx) {
+        userAnswers[currentQ] = optIdx;
+        loadQ(currentQ);
+        setTimeout(() => { nextQ(); }, 250);
+    }
+
+    function renderNav() {
+        let html = '';
+        for(let i = 0; i < bankSoal.length; i++) {
+            let cls = 'nav-item';
+            if(userAnswers[i] !== undefined) cls += ' filled';
+            if(i === currentQ) cls += ' active';
+            html += `<div class="${cls}" onclick="loadQ(${i})">${i + 1}</div>`;
+        }
+        document.getElementById('navGrid').innerHTML = html;
+    }
+
+    function nextQ() {
+        if(currentQ === bankSoal.length - 1) {
+            if(confirm("Apakah Anda yakin ingin menyelesaikan Set Visual ini?")) finishTest();
+            return;
+        }
+        loadQ(currentQ + 1);
+    }
+
+    function prevQ() {
+        if(currentQ > 0) loadQ(currentQ - 1);
+    }
+
+    function startTimer(seconds) {
+        let t = seconds;
+        timerInterval = setInterval(() => {
+            let m = Math.floor(t / 60);
+            let s = t % 60;
+            document.getElementById('timer').innerText = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+            if(--t < 0) {
+                clearInterval(timerInterval);
+                finishTest();
+            }
+        }, 1000);
+    }
+
+    function finishTest() {
+        clearInterval(timerInterval);
+        document.getElementById('page-test').style.display = 'none';
+        document.getElementById('page-result').style.display = 'block';
+
+        let benar = 0;
+        let salah = 0;
+        let kosong = 0;
+
+        bankSoal.forEach((q, i) => {
+            if (userAnswers[i] === undefined) {
+                kosong++;
+            } else if (userAnswers[i] === q.jawabanBenar) {
+                benar++;
+            } else {
+                salah++;
+            }
+        });
+
+        const totalSoal = bankSoal.length;
+        const poinPerSoal = 4; // 25 Soal x 4 = Skor Maksimal 100
+        const skor = benar * poinPerSoal;
+        const persentase = (benar / totalSoal) * 100;
+
+        document.getElementById('res-skor').innerText = `${skor} / 100`;
+        document.getElementById('res-persen').innerText = `${persentase.toFixed(0)}%`;
+        document.getElementById('res-detail').innerText = `${benar} Benar / ${salah} Salah / ${kosong} Kosong`;
+
+        let saranText = '';
+        if (skor >= 84) {
+            saranText = "<b>LUAR BIASA!</b> Orientasi spasial visual Anda sangat tajam. Anda mampu memvisualisasikan rotasi kompas dan peta vektor pergerakan dengan akurat.";
+        } else if (skor >= 68) {
+            saranText = "<b>SANGAT BAIK!</b> Kemampuan membaca grafik dan denah spasial Anda sudah bagus. Pertahankan kecermatan saat menghitung rotasi sudut sudut lancip/tumpul.";
+        } else {
+            saranText = "<b>PERLU LATIHAN EKSTRA.</b> Latihlah penggunaan acuan kompas tetap di pojok kanan navigasi saat membaca denah vektor agar tidak terkecoh arah relatif.";
+        }
+        document.getElementById('saran-box').innerHTML = saranText;
+
+        let pemHtml = '';
+        bankSoal.forEach((q, i) => {
+            let uAns = userAnswers[i];
+            let statusBadge = '';
+            let uAnsText = uAns !== undefined ? `${String.fromCharCode(65+uAns)}. ${q.opsi[uAns]}` : '<i>Tidak Dijawab</i>';
+            let cAnsText = `${String.fromCharCode(65+q.jawabanBenar)}. ${q.opsi[q.jawabanBenar]}`;
+
+            if (uAns === undefined) {
+                statusBadge = '<span class="badge-kosong">KOSONG</span>';
+            } else if (uAns === q.jawabanBenar) {
+                statusBadge = '<span class="badge-benar">BENAR</span>';
+            } else {
+                statusBadge = '<span class="badge-salah">SALAH</span>';
+            }
+
+            pemHtml += `
+                <div style="margin-bottom:20px; border-bottom:1px solid #e2e8f0; padding-bottom:15px;">
+                    <div style="font-weight:bold; color:var(--navy);">Soal ${i + 1} (${q.kategori}) - Status: ${statusBadge}</div>
+                    <div style="margin:8px 0; font-size:14.5px;">${q.pertanyaan}</div>
+                    <div class="svg-container" style="max-width:300px; margin:10px 0;">${q.svg}</div>
+                    <div style="font-size:13.5px; color:#475569;">
+                        <div>Jawaban Anda: ${uAnsText}</div>
+                        <div>Jawaban Benar: <b>${cAnsText}</b></div>
+                    </div>
+                    <div class="pembahasan-box">
+                        <b>Pembahasan:</b> ${q.pembahasan}
+                    </div>
+                </div>
+            `;
+        });
+        document.getElementById('pembahasan-container').innerHTML = pemHtml;
+        window.scrollTo(0,0);
+    }
+</script>
+</body>
+</html>
