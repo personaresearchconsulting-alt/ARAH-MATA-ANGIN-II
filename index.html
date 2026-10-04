@@ -1,468 +1,520 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Portal Simulator Psikotes Polri | Persona Research & Consulting</title>
-  <style>
-    :root {
-      /* Palette Khas Persona - Semi Dark */
-      --bg-dark: #0f172a;       /* Deep Navy Background */
-      --bg-header: #1e293b;     /* Slate Navy Header */
-      --card-bg: #ffffff;       /* Konten Tetap Terang Agak Kontras */
-      --card-hover: #f8fafc;
-      --text-dark: #0f172a;
-      --text-muted: #64748b;
-      --text-light: #f8fafc;
-      --accent-gold: #d97706;   /* Khas Persona Gold */
-      --accent-navy: #1e3a8a;
-      --border-dark: #334155;
-      --border-card: #e2e8f0;
-      --radius: 14px;
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portal Simulator Psikotes Polri | Persona Research & Consulting</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+body {
+    background-color: #eeebe5;
+    color: #0d1322;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    line-height: 1.6;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+/* ==================================================
+   FLOATING WHATSAPP BUTTON
+   ================================================== */
+
+.wa-float {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background-color: #25d366;
+    color: #ffffff;
+    padding: 12px 20px;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    box-shadow: 0 4px 16px rgba(37, 211, 102, 0.4);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 99;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: 2px solid #1eb854;
+}
+
+.wa-float:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(37, 211, 102, 0.5);
+}
+
+.wa-float svg {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
+}
+
+/* ==================================================
+   NAVBAR & HEADER
+   ================================================== */
+
+.navbar {
+    background-color: #ffffff;
+    border-bottom: 2px solid #d1cbbe;
+    padding: 16px 24px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 10px rgba(13, 19, 34, 0.05);
+}
+
+.nav-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.brand-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.brand-title {
+    font-size: 19px;
+    font-weight: 800;
+    color: #0d1322;
+    letter-spacing: 0.8px;
+    line-height: 1.2;
+}
+
+.brand-subtitle {
+    font-size: 11px;
+    color: #333333;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+}
+
+.btn-nav-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #eeebe5;
+    color: #0d1322;
+    border: 2px solid #0d1322;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-nav-back:hover {
+    background-color: #0d1322;
+    color: #ffffff;
+}
+
+.btn-nav-back svg {
+    width: 16px;
+    height: 16px;
+    stroke-width: 2.5;
+}
+
+/* ==================================================
+   MAIN CONTENT CONTAINER
+   ================================================== */
+
+.main-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 30px 20px 60px;
+    width: 100%;
+    flex: 1;
+}
+
+.page-header {
+    background-color: #ffffff;
+    border: 2px solid #d1cbbe;
+    border-radius: 12px;
+    padding: 32px;
+    margin-bottom: 36px;
+    box-shadow: 0 6px 18px rgba(13, 19, 34, 0.06);
+}
+
+.page-badge {
+    display: inline-block;
+    background-color: #0d1322;
+    color: #ffffff;
+    border: 1px solid #0d1322;
+    padding: 5px 14px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+}
+
+.page-header h1 {
+    font-size: 24px;
+    font-weight: 800;
+    color: #0d1322;
+    margin-bottom: 8px;
+    letter-spacing: -0.3px;
+}
+
+.page-header p {
+    font-size: 14px;
+    color: #222222;
+    font-weight: 500;
+    max-width: 700px;
+    line-height: 1.6;
+}
+
+/* ==================================================
+   GRID & CARDS
+   ================================================== */
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.card {
+    background-color: #ffffff;
+    border: 2px solid #d1cbbe;
+    border-radius: 12px;
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    cursor: pointer;
+    text-decoration: none;
+    color: #0d1322;
+    box-shadow: 0 4px 10px rgba(13, 19, 34, 0.04);
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(13, 19, 34, 0.12);
+    border-color: #0d1322;
+}
+
+.card-top {
+    margin-bottom: 16px;
+}
+
+.card-meta {
+    font-size: 11px;
+    font-weight: 800;
+    color: #0d1322;
+    background-color: #e2ded4;
+    border: 1px solid #c4beb1;
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 4px;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+}
+
+.card-title {
+    font-size: 16px;
+    font-weight: 800;
+    color: #0d1322;
+    line-height: 1.35;
+}
+
+.card-info {
+    font-size: 12px;
+    color: #333333;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-top: auto;
+    padding-top: 14px;
+    border-top: 2px solid #eeebe5;
+    font-weight: 700;
+}
+
+/* ==================================================
+   FOOTER
+   ================================================== */
+
+footer {
+    background-color: #ffffff;
+    border-top: 2px solid #d1cbbe;
+    padding: 22px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: #333333;
+    margin-top: auto;
+}
+
+/* ==================================================
+   RESPONSIVE
+   ================================================== */
+
+@media (max-width: 600px) {
+    .navbar {
+        padding: 14px 16px;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    .brand-title {
+        font-size: 16px;
     }
 
-    body {
-      background-color: var(--bg-dark);
-      color: var(--text-light);
-      line-height: 1.5;
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-      user-select: none;
-      -webkit-user-select: none;
+    .brand-subtitle {
+        font-size: 9px;
     }
 
-    /* Floating WhatsApp Button */
-    .wa-float {
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
-      background-color: #25d366;
-      color: white;
-      padding: 12px 20px;
-      border-radius: 50px;
-      text-decoration: none;
-      font-weight: 600;
-      font-size: 0.9rem;
-      box-shadow: 0 4px 16px rgba(37, 211, 102, 0.3);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      z-index: 99;
-      transition: transform 0.2s ease, box-shadow 0.2s;
+    .btn-nav-back span {
+        display: none;
     }
 
-    .wa-float:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4);
+    .btn-nav-back {
+        padding: 8px;
     }
 
-    /* Screen Expiration Overlay */
-    #expired-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: var(--bg-dark);
-      z-index: 9999;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      padding: 24px;
+    .main-container {
+        padding: 16px 16px 40px;
     }
 
-    /* Modal / Screen Login */
-    #login-screen {
-      position: fixed;
-      inset: 0;
-      background-color: var(--bg-dark);
-      z-index: 1000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
+    .page-header {
+        padding: 20px;
+        margin-bottom: 24px;
     }
 
-    .login-card {
-      background: #1e293b;
-      border: 1px solid var(--border-dark);
-      border-radius: var(--radius);
-      padding: 40px;
-      width: 100%;
-      max-width: 400px;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
-      text-align: center;
-    }
-
-    .login-card h2 {
-      font-size: 1.35rem;
-      margin-bottom: 6px;
-      color: var(--text-light);
-      letter-spacing: -0.01em;
-    }
-
-    .login-card p {
-      font-size: 0.875rem;
-      color: var(--accent-gold);
-      font-weight: 600;
-      margin-bottom: 24px;
-    }
-
-    .login-card input {
-      width: 100%;
-      padding: 12px 16px;
-      background-color: var(--bg-dark);
-      border: 1px solid var(--border-dark);
-      border-radius: 8px;
-      font-size: 0.95rem;
-      color: var(--text-light);
-      margin-bottom: 16px;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-
-    .login-card input:focus {
-      border-color: var(--accent-gold);
-    }
-
-    .login-card button {
-      width: 100%;
-      padding: 12px;
-      background-color: var(--accent-gold);
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-size: 0.95rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background-color 0.2s, transform 0.1s;
-    }
-
-    .login-card button:hover {
-      background-color: #b45309;
-    }
-
-    .error-msg {
-      color: #f87171;
-      font-size: 0.85rem;
-      margin-top: 12px;
-      display: none;
-    }
-
-    /* Main Layout */
-    .container {
-      max-width: 1000px;
-      margin: 0 auto;
-      padding: 40px 24px;
-      width: 100%;
-      flex: 1;
-    }
-
-    header {
-      margin-bottom: 36px;
-      border-bottom: 1px solid var(--border-dark);
-      padding-bottom: 24px;
-    }
-
-    header .brand {
-      color: var(--accent-gold);
-      font-size: 0.8rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      margin-bottom: 6px;
-    }
-
-    header h1 {
-      font-size: 1.6rem;
-      font-weight: 700;
-      color: var(--text-light);
-      letter-spacing: -0.02em;
-    }
-
-    header p {
-      color: #94a3b8;
-      font-size: 0.9rem;
-      margin-top: 6px;
+    .page-header h1 {
+        font-size: 20px;
     }
 
     .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 20px;
+        grid-template-columns: 1fr;
+        gap: 14px;
     }
 
     .card {
-      background: var(--card-bg);
-      border: 1px solid var(--border-card);
-      border-radius: var(--radius);
-      padding: 24px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s;
-      text-decoration: none;
-      color: var(--text-dark);
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        padding: 18px;
     }
+}
 
-    .card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 10px 20px -3px rgba(0, 0, 0, 0.2);
-      background-color: var(--card-hover);
-      border-color: var(--accent-gold);
-    }
-
-    .card-meta {
-      font-size: 0.75rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--accent-navy);
-      margin-bottom: 8px;
-    }
-
-    .card-title {
-      font-size: 1.05rem;
-      font-weight: 700;
-      color: var(--text-dark);
-      margin-bottom: 16px;
-      line-height: 1.4;
-    }
-
-    .card-info {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      margin-top: auto;
-      padding-top: 16px;
-      border-top: 1px solid var(--border-card);
-      font-weight: 500;
-    }
-
-    footer {
-      text-align: center;
-      padding: 24px;
-      font-size: 0.8rem;
-      color: #64748b;
-      border-top: 1px solid var(--border-dark);
-      margin-top: 40px;
-    }
-
-    @media (max-width: 640px) {
-      .container {
-        padding: 24px 16px;
-      }
-      .grid {
-        grid-template-columns: 1fr;
-      }
-    }
-  </style>
+</style>
 </head>
+
 <body>
 
-  <!-- Screen Password Login -->
-  <div id="login-screen">
-    <div class="login-card">
-      <h2>Portal Simulator</h2>
-      <p>PERSONA RESEARCH & CONSULTING</p>
-      <input type="password" id="pass-input" placeholder="Masukkan Password" onkeypress="handleKey(event)">
-      <button onclick="checkAuth()">Masuk Portal</button>
-      <div id="login-error" class="error-msg">Password salah. Akses ditolak.</div>
+<header class="navbar">
+    <div class="nav-container">
+        <div class="brand-group">
+            <span class="brand-title">PERSONA CLASS</span>
+            <span class="brand-subtitle">Persona Research & Consulting</span>
+        </div>
+
+        <button type="button" class="btn-nav-back" onclick="goBack()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            <span>KEMBALI</span>
+        </button>
     </div>
-  </div>
+</header>
 
-  <!-- Screen Expiration -->
-  <div id="expired-overlay">
-    <div>
-      <h2 style="color: #f87171; margin-bottom: 8px;">Akses Kedaluwarsa</h2>
-      <p style="color: #94a3b8;">Masa berlaku portal latihan telah berakhir. Hubungi administrator untuk memperbarui akses.</p>
-    </div>
-  </div>
+<!-- Floating WA -->
+<a href="https://wa.me/6287742515786" target="_blank" class="wa-float">
+    <svg viewBox="0 0 24 24">
+        <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
+    </svg>
+    <span>Bantuan WA</span>
+</a>
 
-  <!-- Floating WA -->
-  <a href="https://wa.me/6287742515786" target="_blank" class="wa-float">
-    <span>Bantuan WhatsApp</span>
-  </a>
+<main class="main-container">
 
-  <!-- Content Portal -->
-  <div class="container">
-    <header>
-      <div class="brand">Persona Research & Consulting</div>
-      <h1>Portal Simulator Psikotes Polri</h1>
-      <p>Modul Latihan Sub-Tes Spasial, Denah, Kompas & Kecerdasan</p>
-    </header>
+    <section class="page-header">
+        <span class="page-badge">PORTAL SIMULATOR</span>
+        <h1>Psikotes Polri</h1>
+        <p>Modul Latihan Sub-Tes Spasial, Denah, Kompas & Kecerdasan</p>
+    </section>
 
     <div class="grid">
-      <!-- Card Materi PDF Baru -->
-      <a href="mata_angin.pdf" target="_blank" class="card">
-        <div>
-          <div class="card-meta">Materi Pelajaran</div>
-          <div class="card-title">Materi Arah Mata Angin</div>
-        </div>
-        <div class="card-info">
-          <span>Modul PDF</span>
-          <span>•</span>
-          <span>Panduan Terintegrasi</span>
-        </div>
-      </a>
 
-      <!-- Card 1 -->
-      <a href="bayangan.html" class="card">
-        <div>
-          <div class="card-meta">Kategori Spasial</div>
-          <div class="card-title">Matahari, Bayangan & Kompas</div>
-        </div>
-        <div class="card-info">
-          <span>25 Soal</span>
-          <span>•</span>
-          <span>35 Menit</span>
-        </div>
-      </a>
+        <!-- Card Materi PDF Baru -->
+        <a href="mata_angin.pdf" target="_blank" class="card">
+            <div class="card-top">
+                <div class="card-meta">Materi Pelajaran</div>
+                <div class="card-title">Materi Arah Mata Angin</div>
+            </div>
+            <div class="card-info">
+                <span>Modul PDF</span>
+                <span>•</span>
+                <span>Panduan Terintegrasi</span>
+            </div>
+        </a>
 
-      <!-- Card 2 -->
-      <a href="mix.html" class="card">
-        <div>
-          <div class="card-meta">Kategori Kompleks</div>
-          <div class="card-title">Spasial, Denah, Map & Kompas</div>
-        </div>
-        <div class="card-info">
-          <span>50 Soal</span>
-          <span>•</span>
-          <span>60 Menit</span>
-        </div>
-      </a>
+        <!-- Card 1 -->
+        <a href="bayangan.html" class="card">
+            <div class="card-top">
+                <div class="card-meta">Kategori Spasial</div>
+                <div class="card-title">Matahari, Bayangan & Kompas</div>
+            </div>
+            <div class="card-info">
+                <span>25 Soal</span>
+                <span>•</span>
+                <span>35 Menit</span>
+            </div>
+        </a>
 
-      <!-- Card 3 -->
-      <a href="kompas.html" class="card">
-        <div>
-          <div class="card-meta">Kategori Simulasi</div>
-          <div class="card-title">Penalaran Spasial & Kompas</div>
-        </div>
-        <div class="card-info">
-          <span>25 Soal</span>
-          <span>•</span>
-          <span>30 Menit</span>
-        </div>
-      </a>
+        <!-- Card 2 -->
+        <a href="mix.html" class="card">
+            <div class="card-top">
+                <div class="card-meta">Kategori Kompleks</div>
+                <div class="card-title">Spasial, Denah, Map & Kompas</div>
+            </div>
+            <div class="card-info">
+                <span>50 Soal</span>
+                <span>•</span>
+                <span>60 Menit</span>
+            </div>
+        </a>
 
-      <!-- Card 4 -->
-      <a href="kompas_2.html" class="card">
-        <div>
-          <div class="card-meta">Kategori HOTS</div>
-          <div class="card-title">Spasial, Kompas & Mata Angin</div>
-        </div>
-        <div class="card-info">
-          <span>25 Soal</span>
-          <span>•</span>
-          <span>35 Menit</span>
-        </div>
-      </a>
+        <!-- Card 3 -->
+        <a href="kompas.html" class="card">
+            <div class="card-top">
+                <div class="card-meta">Kategori Simulasi</div>
+                <div class="card-title">Penalaran Spasial & Kompas</div>
+            </div>
+            <div class="card-info">
+                <span>25 Soal</span>
+                <span>•</span>
+                <span>30 Menit</span>
+            </div>
+        </a>
 
-      <!-- Card 5 -->
-      <a href="blok.html" class="card">
-        <div>
-          <div class="card-meta">Kategori Navigasi</div>
-          <div class="card-title">Spasial, Rute Blok & Gedung</div>
-        </div>
-        <div class="card-info">
-          <span>25 Soal</span>
-          <span>•</span>
-          <span>35 Menit</span>
-        </div>
-      </a>
+        <!-- Card 4 -->
+        <a href="kompas_2.html" class="card">
+            <div class="card-top">
+                <div class="card-meta">Kategori HOTS</div>
+                <div class="card-title">Spasial, Kompas & Mata Angin</div>
+            </div>
+            <div class="card-info">
+                <span>25 Soal</span>
+                <span>•</span>
+                <span>35 Menit</span>
+            </div>
+        </a>
 
-      <!-- Card 6 -->
-      <a href="balok_2.html" class="card">
-        <div>
-          <div class="card-meta">Kategori 3D Advanced</div>
-          <div class="card-title">Spasial & Denah Advanced</div>
-        </div>
-        <div class="card-info">
-          <span>25 Soal</span>
-          <span>•</span>
-          <span>35 Menit</span>
-        </div>
-      </a>
+        <!-- Card 5 -->
+        <a href="blok.html" class="card">
+            <div class="card-top">
+                <div class="card-meta">Kategori Navigasi</div>
+                <div class="card-title">Spasial, Rute Blok & Gedung</div>
+            </div>
+            <div class="card-info">
+                <span>25 Soal</span>
+                <span>•</span>
+                <span>35 Menit</span>
+            </div>
+        </a>
 
-      <!-- Card 7 -->
-      <a href="balok_1.html" class="card">
-        <div>
-          <div class="card-meta">Kategori Dasar</div>
-          <div class="card-title">Penalaran Spasial & Denah Lokasi</div>
-        </div>
-        <div class="card-info">
-          <span>25 Soal</span>
-          <span>•</span>
-          <span>30 Menit</span>
-        </div>
-      </a>
+        <!-- Card 6 -->
+        <a href="balok_2.html" class="card">
+            <div class="card-top">
+                <div class="card-meta">Kategori 3D Advanced</div>
+                <div class="card-title">Spasial & Denah Advanced</div>
+            </div>
+            <div class="card-info">
+                <span>25 Soal</span>
+                <span>•</span>
+                <span>35 Menit</span>
+            </div>
+        </a>
 
-      <!-- Card 8 -->
-      <a href="kompas_1.html" class="card">
-        <div>
-          <div class="card-meta">Kategori Visual</div>
-          <div class="card-title">Penalaran Arah (Visual Set)</div>
-        </div>
-        <div class="card-info">
-          <span>25 Soal</span>
-          <span>•</span>
-          <span>30 Menit</span>
-        </div>
-      </a>
+        <!-- Card 7 -->
+        <a href="balok_1.html" class="card">
+            <div class="card-top">
+                <div class="card-meta">Kategori Dasar</div>
+                <div class="card-title">Penalaran Spasial & Denah Lokasi</div>
+            </div>
+            <div class="card-info">
+                <span>25 Soal</span>
+                <span>•</span>
+                <span>30 Menit</span>
+            </div>
+        </a>
+
+        <!-- Card 8 -->
+        <a href="kompas_1.html" class="card">
+            <div class="card-top">
+                <div class="card-meta">Kategori Visual</div>
+                <div class="card-title">Penalaran Arah (Visual Set)</div>
+            </div>
+            <div class="card-info">
+                <span>25 Soal</span>
+                <span>•</span>
+                <span>30 Menit</span>
+            </div>
+        </a>
+
     </div>
 
-    <footer>
-      &copy; Persona Research & Consulting. All rights reserved.
-    </footer>
-  </div>
+</main>
 
-  <script>
-    // System Expiration Protocol (Diatur 6 bulan dari sekarang: 22 Maret 2027)
-    const EXPIRATION_DATE = new Date("2027-03-22T23:59:59");
-    if (new Date() > EXPIRATION_DATE) {
-      document.getElementById('expired-overlay').style.display = 'flex';
+<footer>
+    © Persona Research & Consulting. All rights reserved.
+</footer>
+
+<script>
+/* Fungsi Navigasi Kembali */
+function goBack() {
+    if (document.referrer && window.history.length > 1) {
+        window.history.back();
+    } else {
+        window.location.href = "index.html"; 
     }
+}
 
-    // Auth Password System
-    const TARGET_PASSWORD = "persona05";
+/* Basic Security - Khas Persona */
+document.addEventListener("contextmenu", function(e) {
+    e.preventDefault();
+});
 
-    function checkAuth() {
-      const input = document.getElementById('pass-input').value;
-      if (input === TARGET_PASSWORD) {
-        sessionStorage.setItem('portal_authenticated', 'true');
-        document.getElementById('login-screen').style.display = 'none';
-      } else {
-        document.getElementById('login-error').style.display = 'block';
-      }
-    }
-
-    function handleKey(e) {
-      if (e.key === 'Enter') {
-        checkAuth();
-      }
-    }
-
-    // Auto Bypass Login jika sudah auth di sesi berjalan
-    if (sessionStorage.getItem('portal_authenticated') === 'true') {
-      document.getElementById('login-screen').style.display = 'none';
-    }
-
-    // Security Anti-Copy Protocol
-    document.addEventListener('contextmenu', e => e.preventDefault());
-    document.addEventListener('keydown', e => {
-      if ((e.ctrlKey && (e.key === 'c' || e.key === 'u' || e.key === 'i' || e.key === 's')) || e.key === 'F12') {
+document.addEventListener("keydown", function(e) {
+    if (
+        e.keyCode === 123 ||
+        (e.ctrlKey && e.shiftKey && e.keyCode === 73) ||
+        (e.ctrlKey && e.shiftKey && e.keyCode === 74) ||
+        (e.ctrlKey && e.shiftKey && e.keyCode === 67) ||
+        (e.ctrlKey && e.keyCode === 85)
+    ) {
         e.preventDefault();
-      }
-    });
-  </script>
+    }
+});
+</script>
+
 </body>
 </html>
